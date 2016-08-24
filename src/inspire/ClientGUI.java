@@ -120,7 +120,15 @@ public class ClientGUI {
         public void run() {
             new ListReader(brn);
             while (true) {
-                new MiniClient(ip, null, downloadsFolder, 9600);
+                try {
+                    Socket sc = new Socket(ip, 9600);
+                    new MiniClient(sc, null, downloadsFolder);
+                    Thread.sleep(4000);
+                } catch (IOException e) {
+                    // Do nothing.
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }

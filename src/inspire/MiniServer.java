@@ -71,6 +71,8 @@ class MiniServer implements Runnable {
                 if (serverSocket != null) {
                     serverSocket.close();
                 }
+                dos.close();
+                sc.close();
             } catch (IOException e) {
                 // Do nothing.
             }

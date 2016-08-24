@@ -5,6 +5,7 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ServerGUI {
     private JPanel rootPanel;
@@ -15,7 +16,7 @@ public class ServerGUI {
     private List<String> clientList;
     private CustomTableModel tm;
     private String downloadsFolder;
-    private Map<String, List<String>> clientFileListMap;
+    private Map<String, Queue<String>> clientFileListMap;
 
     private ServerGUI() {
         clientList = new ArrayList<>();
@@ -84,9 +85,10 @@ public class ServerGUI {
         @Override
         public void run() {
             try {
+                ServerSocket miniServerSocket = new ServerSocket(9600);
                 while (true) {
                     Socket clientSocket = serverSocket.accept();
-                    new Thread(new WorkerRunnable(clientSocket)).start();
+                    new Thread(new WorkerRunnable(clientSocket, miniServerSocket)).start();
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -96,9 +98,11 @@ public class ServerGUI {
 
     private class WorkerRunnable implements Runnable {
         private Socket clientSocket;
+        private ServerSocket serverSocket;
 
-        WorkerRunnable(Socket clientSocket) {
+        WorkerRunnable(Socket clientSocket, ServerSocket miniServerSocket) {
             this.clientSocket = clientSocket;
+            this.serverSocket = miniServerSocket;
         }
 
         @Override
@@ -108,8 +112,8 @@ public class ServerGUI {
                 PrintWriter pw = new PrintWriter(clientSocket.getOutputStream());
 
                 new ListPasser(brn, pw);
-                ServerSocket serverSocket = new ServerSocket(9600);
-                Map<MiniServer, Map<String, File>> threadMap = new HashMap<>();
+                Map<MiniServer, Map<String, File>> threadMap = new ConcurrentHashMap<>();
+                new MiniServerHandler(serverSocket, threadMap);
                 while (true) {
                     for (Iterator<Map.Entry<MiniServer, Map<String, File>>> it = threadMap.entrySet().iterator();
                          it.hasNext(); ) {
@@ -123,23 +127,56 @@ public class ServerGUI {
                             it.remove();
                         }
                     }
-                    new MiniClient(clientSocket.getInetAddress().getHostAddress(), clientFileListMap, downloadsFolder,
-                            9600 + clientList.indexOf(clientSocket.getInetAddress().getHostAddress()) + 1);
-                    Socket sc = serverSocket.accept();
-                    if (clientFileListMap.containsKey(sc.getInetAddress().getHostAddress())) {
-                        for (String filename : clientFileListMap.get(sc.getInetAddress().getHostAddress())) {
-                            File f = new File(downloadsFolder + "/" + filename);
-                            MiniServer ms;
-                            Thread t = new Thread(ms = new MiniServer(sc, f, null, null));
-                            t.start();
-                            Map<String, File> fileMap = Collections.singletonMap(sc.getInetAddress().getHostAddress(),
-                                    f);
-                            threadMap.put(ms, fileMap);
-                        }
+                    try {
+                        Socket sc = new Socket(clientSocket.getInetAddress().getHostAddress(),
+                                9600 + clientList.indexOf(clientSocket.getInetAddress().getHostAddress()) + 1);
+                        new MiniClient(sc, clientFileListMap, downloadsFolder);
+                        Thread.sleep(4000);
+                    } catch (IOException e) {
+                        // Do nothing.
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
                 }
             } catch (IOException e) {
                 e.printStackTrace();
+            }
+        }
+
+        private class MiniServerHandler implements Runnable {
+            ServerSocket serverSocket;
+            Map<MiniServer, Map<String, File>> threadMap;
+
+            MiniServerHandler(ServerSocket serverSocket, Map<MiniServer, Map<String, File>> threadMap) {
+                this.serverSocket = serverSocket;
+                this.threadMap = threadMap;
+                Thread t = new Thread(this);
+                t.start();
+            }
+
+            @Override
+            public void run() {
+                try {
+                    while (true) {
+                        Socket sc = serverSocket.accept();
+                        if (clientFileListMap.containsKey(sc.getInetAddress().getHostAddress())) {
+                            for (String filename : clientFileListMap.get(sc.getInetAddress().getHostAddress())) {
+                                File f = new File(downloadsFolder + "/" + filename);
+                                MiniServer ms;
+                                Thread t = new Thread(ms = new MiniServer(sc, f, null, null));
+                                t.start();
+                                Map<String, File> fileMap = Collections.singletonMap(sc.getInetAddress().getHostAddress(),
+                                        f);
+                                threadMap.put(ms, fileMap);
+                            }
+                            Thread.sleep(4000);
+                        } else {
+                            sc.close();
+                        }
+                    }
+                } catch (IOException | InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }

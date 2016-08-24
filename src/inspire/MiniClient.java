@@ -5,28 +5,24 @@ import java.io.DataInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 class MiniClient implements Runnable {
     private DataInputStream dis;
-    private Map<String, List<String>> clientFileListMap;
+    private Map<String, Queue<String>> clientFileListMap;
     private String downloadsFolder;
 
-    MiniClient(String ip, Map<String, List<String>> clientFileListMap, String downloadsFolder, int port) {
-        while (true) {
-            try {
-                Socket sc = new Socket(ip, port);
-                this.clientFileListMap = clientFileListMap;
-                this.downloadsFolder = downloadsFolder;
-                dis = new DataInputStream(sc.getInputStream());
-                Thread t = new Thread(this);
-                t.start();
-                break;
-            } catch (IOException e) {
-                // Do nothing.
-            }
+    MiniClient(Socket sc, Map<String, Queue<String>> clientFileListMap, String downloadsFolder) {
+        this.clientFileListMap = clientFileListMap;
+        this.downloadsFolder = downloadsFolder;
+        try {
+            dis = new DataInputStream(sc.getInputStream());
+            Thread t = new Thread(this);
+            t.start();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -40,10 +36,10 @@ class MiniClient implements Runnable {
             }
             String filename = sb.toString();
             String actualFileName = filename;
-            List<String> fileList = null;
+            Queue<String> fileList = null;
             if (clientFileListMap != null) {
                 fileList = clientFileListMap.containsKey(filename)
-                        ? clientFileListMap.get(filename) : new ArrayList<>();
+                        ? clientFileListMap.get(filename) : new ConcurrentLinkedQueue<>();
                 filenameLen = dis.readInt();
                 sb = new StringBuilder();
                 for (int i = 0; i < filenameLen; i++) {
@@ -69,6 +65,7 @@ class MiniClient implements Runnable {
             } else {
                 clientFileListMap.put(filename, fileList);
             }
+            dis.close();
         } catch (IOException e) {
             // Do nothing.
         }
