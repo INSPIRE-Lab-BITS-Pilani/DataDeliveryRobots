@@ -1,6 +1,8 @@
 package inspire;
 
 import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -24,30 +26,36 @@ public class ServerGUI {
         downloadsFolder = System.getProperty("java.io.tmpdir");
         clientFileListMap = new HashMap<>();
 
-        startServerButton.addActionListener(e -> {
-            try {
-                JFileChooser fileChooser = new JFileChooser();
-                fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
-                fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-                fileChooser.setDialogTitle("Choose client list file");
-                int result = fileChooser.showOpenDialog(rootPanel);
-                if (result == JFileChooser.APPROVE_OPTION) {
-                    File clientListFile = fileChooser.getSelectedFile();
-                    populateClientList(clientListFile);
-                    new Server();
+        startServerButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    JFileChooser fileChooser = new JFileChooser();
+                    fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
+                    fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                    fileChooser.setDialogTitle("Choose client list file");
+                    int result = fileChooser.showOpenDialog(rootPanel);
+                    if (result == JFileChooser.APPROVE_OPTION) {
+                        File clientListFile = fileChooser.getSelectedFile();
+                        ServerGUI.this.populateClientList(clientListFile);
+                        new Server();
+                    }
+                } catch (FileNotFoundException e1) {
+                    e1.printStackTrace();
                 }
-            } catch (FileNotFoundException e1) {
-                e1.printStackTrace();
             }
         });
         connectedTable.setModel(tm);
-        downloadsFolderButton.addActionListener(e -> {
-            JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setCurrentDirectory(new File(System.getProperty("java.io.tmpdir")));
-            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            int result = fileChooser.showOpenDialog(rootPanel);
-            if (result == JFileChooser.APPROVE_OPTION) {
-                downloadsFolder = fileChooser.getSelectedFile().getAbsolutePath();
+        downloadsFolderButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setCurrentDirectory(new File(System.getProperty("java.io.tmpdir")));
+                fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                int result = fileChooser.showOpenDialog(rootPanel);
+                if (result == JFileChooser.APPROVE_OPTION) {
+                    downloadsFolder = fileChooser.getSelectedFile().getAbsolutePath();
+                }
             }
         });
     }
@@ -165,8 +173,8 @@ public class ServerGUI {
                                 MiniServer ms;
                                 Thread t = new Thread(ms = new MiniServer(sc, f, null, null));
                                 t.start();
-                                Map<String, File> fileMap = Collections.singletonMap(sc.getInetAddress().getHostAddress(),
-                                        f);
+                                Map<String, File> fileMap = Collections.singletonMap(
+                                        sc.getInetAddress().getHostAddress(), f);
                                 threadMap.put(ms, fileMap);
                             }
                             Thread.sleep(4000);

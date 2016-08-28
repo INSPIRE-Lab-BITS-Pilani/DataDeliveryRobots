@@ -39,7 +39,7 @@ class MiniClient implements Runnable {
             Queue<String> fileList = null;
             if (clientFileListMap != null) {
                 fileList = clientFileListMap.containsKey(filename)
-                        ? clientFileListMap.get(filename) : new ConcurrentLinkedQueue<>();
+                        ? clientFileListMap.get(filename) : new ConcurrentLinkedQueue<String>();
                 filenameLen = dis.readInt();
                 sb = new StringBuilder();
                 for (int i = 0; i < filenameLen; i++) {

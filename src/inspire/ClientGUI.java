@@ -1,6 +1,8 @@
 package inspire;
 
 import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -32,57 +34,73 @@ public class ClientGUI {
         tm = new CustomTableModel(clientList);
         downloadsFolder = System.getProperty("user.home") + "/Downloads";
 
-        startClientButton.addActionListener(e -> cl = new Client(this.ip));
-        getListButton.addActionListener(e -> {
-            if (cl != null) {
-                cl.pw.println("getlist");
-                cl.pw.flush();
-            } else {
-                JOptionPane.showMessageDialog(null, "Start the client first!");
+        startClientButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                cl = new Client(ClientGUI.this.ip);
+            }
+        });
+        getListButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (cl != null) {
+                    cl.pw.println("getlist");
+                    cl.pw.flush();
+                } else {
+                    JOptionPane.showMessageDialog(null, "Start the client first!");
+                }
             }
         });
         clientListTable.setModel(tm);
-        chooseFileButton.addActionListener(e -> {
-            JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
-            fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-            int result = fileChooser.showOpenDialog(rootPanel);
-            if (result == JFileChooser.APPROVE_OPTION) {
-                selectedFile = fileChooser.getSelectedFile();
-                filePath.append(selectedFile.getAbsolutePath() + "\n");
+        chooseFileButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
+                fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                int result = fileChooser.showOpenDialog(rootPanel);
+                if (result == JFileChooser.APPROVE_OPTION) {
+                    selectedFile = fileChooser.getSelectedFile();
+                    filePath.append(selectedFile.getAbsolutePath() + "\n");
+                }
             }
         });
-        sendButton.addActionListener(e -> {
-            int n = clientListTable.getSelectedRow();
-            if (n != -1) {
-                if (selectedFile != null) {
-                    int result = JOptionPane.showConfirmDialog(null, "Send " + selectedFile + " to "
-                            + clientList.get(n) + "?");
-                    if (result == JOptionPane.YES_OPTION) {
-                        ServerSocket sersock = null;
-                        try {
-                            sersock = new ServerSocket(9600 + clientList.indexOf(mIp) + 1);
-                            JOptionPane.showMessageDialog(null, "Transfer of " + selectedFile + " started");
-                            Socket sc = sersock.accept();
-                            new Thread(new MiniServer(sc, selectedFile, clientList.get(n), sersock)).start();
-                        } catch (IOException e1) {
-                            e1.printStackTrace();
+        sendButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int n = clientListTable.getSelectedRow();
+                if (n != -1) {
+                    if (selectedFile != null) {
+                        int result = JOptionPane.showConfirmDialog(null, "Send " + selectedFile + " to "
+                                + clientList.get(n) + "?");
+                        if (result == JOptionPane.YES_OPTION) {
+                            try {
+                                ServerSocket sersock = new ServerSocket(9600 + clientList.indexOf(mIp) + 1);
+                                JOptionPane.showMessageDialog(null, "Transfer of " + selectedFile + " started");
+                                Socket sc = sersock.accept();
+                                new Thread(new MiniServer(sc, selectedFile, clientList.get(n), sersock)).start();
+                            } catch (IOException e1) {
+                                e1.printStackTrace();
+                            }
                         }
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Choose a file first!");
                     }
                 } else {
-                    JOptionPane.showMessageDialog(null, "Choose a file first!");
+                    JOptionPane.showMessageDialog(null, "Select the receiver first!");
                 }
-            } else {
-                JOptionPane.showMessageDialog(null, "Select the receiver first!");
             }
         });
-        downloadsFolderButton.addActionListener(e -> {
-            JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setCurrentDirectory(new File(System.getProperty("user.home") + "/Downloads"));
-            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            int result = fileChooser.showOpenDialog(rootPanel);
-            if (result == JFileChooser.APPROVE_OPTION) {
-                downloadsFolder = fileChooser.getSelectedFile().getAbsolutePath();
+        downloadsFolderButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setCurrentDirectory(new File(System.getProperty("user.home") + "/Downloads"));
+                fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                int result = fileChooser.showOpenDialog(rootPanel);
+                if (result == JFileChooser.APPROVE_OPTION) {
+                    downloadsFolder = fileChooser.getSelectedFile().getAbsolutePath();
+                }
             }
         });
     }
@@ -105,7 +123,7 @@ public class ClientGUI {
         public Client(String ip) {
             try {
                 Socket sock = new Socket(ip, 9000);
-                mIp = sock.getInetAddress().getHostAddress();
+                mIp = sock.getLocalAddress().getHostAddress();
                 brn = new BufferedReader(new InputStreamReader(sock.getInputStream()));
                 pw = new PrintWriter(sock.getOutputStream());
                 Thread t = new Thread(this);
