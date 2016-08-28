@@ -4,10 +4,10 @@ import javax.swing.table.AbstractTableModel;
 import java.util.List;
 
 class CustomTableModel extends AbstractTableModel {
-    private String[] columns = {"IP Address"};
-    private List<String> clientList;
+    private String[] columns = {"Name: IP Address"};
+    private List<Person> clientList;
 
-    CustomTableModel(List<String> clientList) {
+    CustomTableModel(List<Person> clientList) {
         this.clientList = clientList;
     }
 

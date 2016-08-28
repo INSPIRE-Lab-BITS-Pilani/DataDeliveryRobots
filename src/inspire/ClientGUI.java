@@ -21,7 +21,7 @@ public class ClientGUI {
     private JButton downloadsFolderButton;
 
     private String ip;
-    private List<String> clientList;
+    private List<Person> clientList;
     private Client cl;
     private CustomTableModel tm;
     private File selectedFile;
@@ -75,10 +75,12 @@ public class ClientGUI {
                                 + clientList.get(n) + "?");
                         if (result == JOptionPane.YES_OPTION) {
                             try {
-                                ServerSocket sersock = new ServerSocket(9600 + clientList.indexOf(mIp) + 1);
+                                ServerSocket sersock = new ServerSocket(9600 + clientList.indexOf(new Person(null,
+                                        mIp)) + 1);
                                 JOptionPane.showMessageDialog(null, "Transfer of " + selectedFile + " started");
                                 Socket sc = sersock.accept();
-                                new Thread(new MiniServer(sc, selectedFile, clientList.get(n), sersock)).start();
+                                new Thread(new MiniServer(sc, selectedFile, clientList.get(n).getIp(),
+                                        sersock)).start();
                             } catch (IOException e1) {
                                 e1.printStackTrace();
                             }
@@ -171,7 +173,9 @@ public class ClientGUI {
                         st.nextToken();
                         int size = Integer.parseInt(st.nextToken());
                         for (int i = 0; i < size; i++) {
-                            clientList.add(brn.readLine());
+                            String clientName = brn.readLine();
+                            String clientIp = brn.readLine();
+                            clientList.add(new Person(clientName, clientIp));
                             tm.fireTableDataChanged();
                         }
                     }

@@ -15,7 +15,7 @@ public class ServerGUI {
     private JButton downloadsFolderButton;
     private JTable connectedTable;
 
-    private List<String> clientList;
+    private List<Person> clientList;
     private CustomTableModel tm;
     private String downloadsFolder;
     private Map<String, Queue<String>> clientFileListMap;
@@ -63,7 +63,10 @@ public class ServerGUI {
     private void populateClientList(File clientListFile) throws FileNotFoundException {
         Scanner sc = new Scanner(clientListFile);
         while (sc.hasNextLine()) {
-            clientList.add(sc.nextLine());
+            StringTokenizer st = new StringTokenizer(sc.nextLine());
+            String name = st.nextToken();
+            String ip = st.nextToken();
+            clientList.add(new Person(name, ip));
         }
         tm.fireTableDataChanged();
     }
@@ -137,7 +140,8 @@ public class ServerGUI {
                     }
                     try {
                         Socket sc = new Socket(clientSocket.getInetAddress().getHostAddress(),
-                                9600 + clientList.indexOf(clientSocket.getInetAddress().getHostAddress()) + 1);
+                                9600 + clientList.indexOf(new Person(null,
+                                        clientSocket.getInetAddress().getHostAddress())) + 1);
                         new MiniClient(sc, clientFileListMap, downloadsFolder);
                         Thread.sleep(4000);
                     } catch (IOException e) {
@@ -207,8 +211,9 @@ public class ServerGUI {
                     String s = brn.readLine();
                     if (s != null && s.startsWith("getlist")) {
                         pw.println("SIZE " + clientList.size());
-                        for (String client : clientList) {
-                            pw.println(client);
+                        for (Person client : clientList) {
+                            pw.println(client.getName());
+                            pw.println(client.getIp());
                         }
                         pw.flush();
                     }
