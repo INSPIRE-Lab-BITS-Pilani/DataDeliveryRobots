@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -26,7 +27,7 @@ public class ClientGUI {
     private CustomTableModel tm;
     private File selectedFile;
     private String downloadsFolder;
-    private String mIp;
+    private String mHostName;
 
     private ClientGUI(String ip) {
         this.ip = ip;
@@ -76,10 +77,10 @@ public class ClientGUI {
                         if (result == JOptionPane.YES_OPTION) {
                             try {
                                 ServerSocket sersock = new ServerSocket(9600 + clientList.indexOf(new Person(null,
-                                        mIp)) + 1);
+                                        mHostName)) + 1);
                                 JOptionPane.showMessageDialog(null, "Transfer of " + selectedFile + " started");
                                 Socket sc = sersock.accept();
-                                new Thread(new MiniServer(sc, selectedFile, clientList.get(n).getIp(),
+                                new Thread(new MiniServer(sc, selectedFile, clientList.get(n).getHostName(),
                                         sersock)).start();
                             } catch (IOException e1) {
                                 e1.printStackTrace();
@@ -108,7 +109,7 @@ public class ClientGUI {
     }
 
     public static void main(String[] args) {
-        String ip = JOptionPane.showInputDialog("Enter the IP address of the server");
+        String ip = JOptionPane.showInputDialog("Enter the host name of the server");
         if (ip != null) {
             JFrame frame = new JFrame("ClientGUI");
             frame.setContentPane(new ClientGUI(ip).rootPanel);
@@ -125,7 +126,7 @@ public class ClientGUI {
         public Client(String ip) {
             try {
                 Socket sock = new Socket(ip, 9000);
-                mIp = sock.getLocalAddress().getHostAddress();
+                mHostName = InetAddress.getLocalHost().getHostName();
                 brn = new BufferedReader(new InputStreamReader(sock.getInputStream()));
                 pw = new PrintWriter(sock.getOutputStream());
                 Thread t = new Thread(this);
@@ -174,8 +175,8 @@ public class ClientGUI {
                         int size = Integer.parseInt(st.nextToken());
                         for (int i = 0; i < size; i++) {
                             String clientName = brn.readLine();
-                            String clientIp = brn.readLine();
-                            clientList.add(new Person(clientName, clientIp));
+                            String clientHostName = brn.readLine();
+                            clientList.add(new Person(clientName, clientHostName));
                             tm.fireTableDataChanged();
                         }
                     }

@@ -4,19 +4,19 @@ import java.util.Objects;
 
 class Person {
     private String name;
-    private String ip;
+    private String hostName;
 
-    Person(String name, String ip) {
+    Person(String name, String hostName) {
         this.name = name;
-        this.ip = ip;
+        this.hostName = hostName;
     }
 
     String getName() {
         return name;
     }
 
-    String getIp() {
-        return ip;
+    String getHostName() {
+        return hostName;
     }
 
     @Override
@@ -24,16 +24,16 @@ class Person {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Person person = (Person) o;
-        return Objects.equals(ip, person.ip);
+        return Objects.equals(hostName, person.hostName);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(ip);
+        return Objects.hash(hostName);
     }
 
     @Override
     public String toString() {
-        return name + ": " + ip;
+        return name + ": " + hostName;
     }
 }

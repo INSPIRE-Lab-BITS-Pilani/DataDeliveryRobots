@@ -4,8 +4,10 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -65,8 +67,8 @@ public class ServerGUI {
         while (sc.hasNextLine()) {
             StringTokenizer st = new StringTokenizer(sc.nextLine());
             String name = st.nextToken();
-            String ip = st.nextToken();
-            clientList.add(new Person(name, ip));
+            String hostName = st.nextToken();
+            clientList.add(new Person(name, hostName));
         }
         tm.fireTableDataChanged();
     }
@@ -131,17 +133,16 @@ public class ServerGUI {
                         Map.Entry<MiniServer, Map<String, File>> entry = it.next();
                         Thread thread = entry.getKey().reqHandlerThread;
                         if (thread != null && thread.getState() == Thread.State.TERMINATED) {
-                            for (String sockAddress : entry.getValue().keySet()) {
-                                clientFileListMap.get(sockAddress).remove(entry.getValue().get(sockAddress).getName());
-                                entry.getValue().get(sockAddress).delete();
+                            for (String sockHostName : entry.getValue().keySet()) {
+                                clientFileListMap.get(sockHostName).remove(entry.getValue().get(sockHostName).getName());
+                                entry.getValue().get(sockHostName).delete();
                             }
                             it.remove();
                         }
                     }
                     try {
-                        Socket sc = new Socket(clientSocket.getInetAddress().getHostAddress(),
-                                9600 + clientList.indexOf(new Person(null,
-                                        clientSocket.getInetAddress().getHostAddress())) + 1);
+                        String hostName = getHostName(clientSocket);
+                        Socket sc = new Socket(hostName, 9600 + clientList.indexOf(new Person(null, hostName)) + 1);
                         new MiniClient(sc, clientFileListMap, downloadsFolder);
                         Thread.sleep(4000);
                     } catch (IOException e) {
@@ -171,14 +172,14 @@ public class ServerGUI {
                 try {
                     while (true) {
                         Socket sc = serverSocket.accept();
-                        if (clientFileListMap.containsKey(sc.getInetAddress().getHostAddress())) {
-                            for (String filename : clientFileListMap.get(sc.getInetAddress().getHostAddress())) {
+                        String hostName = getHostName(sc);
+                        if (clientFileListMap.containsKey(hostName)) {
+                            for (String filename : clientFileListMap.get(hostName)) {
                                 File f = new File(downloadsFolder + "/" + filename);
                                 MiniServer ms;
                                 Thread t = new Thread(ms = new MiniServer(sc, f, null, null));
                                 t.start();
-                                Map<String, File> fileMap = Collections.singletonMap(
-                                        sc.getInetAddress().getHostAddress(), f);
+                                Map<String, File> fileMap = Collections.singletonMap(hostName, f);
                                 threadMap.put(ms, fileMap);
                             }
                             Thread.sleep(4000);
@@ -191,6 +192,14 @@ public class ServerGUI {
                 }
             }
         }
+    }
+
+    private String getHostName(Socket sc) throws UnknownHostException {
+        String hostName = sc.getInetAddress().getHostName();
+        if (hostName.equals("localhost")) {
+            hostName = InetAddress.getLocalHost().getHostName();
+        }
+        return hostName;
     }
 
     private class ListPasser implements Runnable {
@@ -213,7 +222,7 @@ public class ServerGUI {
                         pw.println("SIZE " + clientList.size());
                         for (Person client : clientList) {
                             pw.println(client.getName());
-                            pw.println(client.getIp());
+                            pw.println(client.getHostName());
                         }
                         pw.flush();
                     }

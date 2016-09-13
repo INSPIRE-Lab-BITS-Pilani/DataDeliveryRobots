@@ -11,14 +11,14 @@ import java.net.Socket;
 class MiniServer implements Runnable {
     private Socket sc;
     private File selectedFile;
-    private String receiverAddress;
+    private String receiverHostName;
     private ServerSocket serverSocket;
     Thread reqHandlerThread;
 
-    MiniServer(Socket sc, File selectedFile, String receiverAddress, ServerSocket serverSocket) {
+    MiniServer(Socket sc, File selectedFile, String receiverHostName, ServerSocket serverSocket) {
         this.sc = sc;
         this.selectedFile = selectedFile;
-        this.receiverAddress = receiverAddress;
+        this.receiverHostName = receiverHostName;
         this.serverSocket = serverSocket;
     }
 
@@ -45,9 +45,9 @@ class MiniServer implements Runnable {
             try {
                 FileInputStream fis = new FileInputStream(selectedFile);
                 long size = selectedFile.length();
-                if (receiverAddress != null) {
-                    dos.writeInt(receiverAddress.length());
-                    dos.writeChars(receiverAddress);
+                if (receiverHostName != null) {
+                    dos.writeInt(receiverHostName.length());
+                    dos.writeChars(receiverHostName);
                 }
                 dos.writeInt(selectedFile.getName().length());
                 dos.writeChars(selectedFile.getName());
@@ -65,7 +65,7 @@ class MiniServer implements Runnable {
                     }
                 }
                 fis.close();
-                if (receiverAddress != null) {
+                if (receiverHostName != null) {
                     JOptionPane.showMessageDialog(null, "Transfer of " + selectedFile + " completed");
                 }
                 if (serverSocket != null) {
