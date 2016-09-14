@@ -9,6 +9,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 import java.util.StringTokenizer;
 
 public class ClientGUI {
@@ -111,7 +112,31 @@ public class ClientGUI {
     }
 
     public static void main(String[] args) {
-        String ip = JOptionPane.showInputDialog("Enter the host name of the server");
+        File f = new File(System.getProperty("java.io.tmpdir") + "/" + "__ServerHostName__.txt");
+        String ip = null;
+        int result = JOptionPane.NO_OPTION;
+        if (f.exists()) {
+            try {
+                Scanner sc = new Scanner(f);
+                ip = sc.nextLine();
+                sc.close();
+                result = JOptionPane.showConfirmDialog(null, "Use " + ip + " as the server host name?");
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+        if (!f.exists() || result != JOptionPane.YES_OPTION) {
+            ip = JOptionPane.showInputDialog("Enter the host name of the server");
+            if (ip != null) {
+                try {
+                    PrintStream ps = new PrintStream(f);
+                    ps.println(ip);
+                    ps.close();
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
         if (ip != null) {
             JFrame frame = new JFrame("ClientGUI");
             frame.setContentPane(new ClientGUI(ip).rootPanel);
