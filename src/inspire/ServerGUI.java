@@ -32,15 +32,34 @@ public class ServerGUI {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    JFileChooser fileChooser = new JFileChooser();
-                    fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
-                    fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-                    fileChooser.setDialogTitle("Choose client list file");
-                    int result = fileChooser.showOpenDialog(rootPanel);
-                    if (result == JFileChooser.APPROVE_OPTION) {
-                        File clientListFile = fileChooser.getSelectedFile();
-                        ServerGUI.this.populateClientList(clientListFile);
-                        new Server();
+                    File f = new File(System.getProperty("java.io.tmpdir") + "/" + "__ClientListFile__.txt");
+                    File clientListFile = null;
+                    int result = JOptionPane.NO_OPTION;
+                    if (f.exists()) {
+                        Scanner sc = new Scanner(f);
+                        clientListFile = new File(sc.nextLine());
+                        sc.close();
+                        result = JOptionPane.showConfirmDialog(null, "Use " + clientListFile + " as the client list" +
+                                " file?");
+                        if (result == JOptionPane.YES_OPTION) {
+                            ServerGUI.this.populateClientList(clientListFile);
+                            new Server();
+                        }
+                    }
+                    if (!f.exists() || result != JOptionPane.YES_OPTION) {
+                        JFileChooser fileChooser = new JFileChooser();
+                        fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
+                        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                        fileChooser.setDialogTitle("Choose client list file");
+                        result = fileChooser.showOpenDialog(rootPanel);
+                        if (result == JFileChooser.APPROVE_OPTION) {
+                            clientListFile = fileChooser.getSelectedFile();
+                            PrintStream ps = new PrintStream(f);
+                            ps.println(clientListFile.getAbsolutePath());
+                            ps.close();
+                            ServerGUI.this.populateClientList(clientListFile);
+                            new Server();
+                        }
                     }
                 } catch (FileNotFoundException e1) {
                     e1.printStackTrace();
