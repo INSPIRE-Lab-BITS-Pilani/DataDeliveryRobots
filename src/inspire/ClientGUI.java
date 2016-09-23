@@ -72,25 +72,26 @@ public class ClientGUI {
             public void actionPerformed(ActionEvent e) {
                 int x = clientListTable.getSelectedRowCount();
                 if (x != 0) {
-                    for (int n : clientListTable.getSelectedRows()) {
-                        if (selectedFile != null) {
-                            int result = JOptionPane.showConfirmDialog(null, "Send " + selectedFile + " to "
-                                    + clientList.get(n) + "?");
-                            if (result == JOptionPane.YES_OPTION) {
-                                try {
-                                    ServerSocket sersock = new ServerSocket(9600 + clientList.indexOf(new Person(null,
-                                            mHostName)) + 1);
-                                    JOptionPane.showMessageDialog(null, "Transfer of " + selectedFile + " started");
-                                    Socket sc = sersock.accept();
-                                    new Thread(new MiniServer(sc, selectedFile, clientList.get(n).getHostName(),
-                                            sersock)).start();
-                                } catch (IOException e1) {
-                                    e1.printStackTrace();
-                                }
-                            }
-                        } else {
-                            JOptionPane.showMessageDialog(null, "Choose a file first!");
+                    if (selectedFile != null) {
+                        List<Person> selectedPeople = new ArrayList<>();
+                        for (int n : clientListTable.getSelectedRows()) {
+                            selectedPeople.add(clientList.get(n));
                         }
+                        int result = JOptionPane.showConfirmDialog(null, "Send " + selectedFile + " to "
+                                + selectedPeople + "?");
+                        if (result == JOptionPane.YES_OPTION) {
+                            try {
+                                ServerSocket sersock = new ServerSocket(9600 + clientList.indexOf(new Person(null,
+                                        mHostName)) + 1);
+                                JOptionPane.showMessageDialog(null, "Transfer of " + selectedFile + " started");
+                                Socket sc = sersock.accept();
+                                new Thread(new MiniServer(sc, selectedFile, selectedPeople, sersock)).start();
+                            } catch (IOException e1) {
+                                e1.printStackTrace();
+                            }
+                        }
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Choose a file first!");
                     }
                 } else {
                     JOptionPane.showMessageDialog(null, "Select the receiver(s) first!");

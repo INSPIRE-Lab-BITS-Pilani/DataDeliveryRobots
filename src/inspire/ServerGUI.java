@@ -135,7 +135,16 @@ public class ServerGUI {
                         if (thread != null && thread.getState() == Thread.State.TERMINATED) {
                             for (String sockHostName : entry.getValue().keySet()) {
                                 clientFileListMap.get(sockHostName).remove(entry.getValue().get(sockHostName).getName());
-                                entry.getValue().get(sockHostName).delete();
+                                boolean flag = true;
+                                for (Queue<String> q : clientFileListMap.values()) {
+                                    if (q.contains(entry.getValue().get(sockHostName).getName())) {
+                                        flag = false;
+                                        break;
+                                    }
+                                }
+                                if (flag) {
+                                    entry.getValue().get(sockHostName).delete();
+                                }
                             }
                             it.remove();
                         }

@@ -7,18 +7,19 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.List;
 
 class MiniServer implements Runnable {
     private Socket sc;
     private File selectedFile;
-    private String receiverHostName;
+    private List<Person> receivers;
     private ServerSocket serverSocket;
     Thread reqHandlerThread;
 
-    MiniServer(Socket sc, File selectedFile, String receiverHostName, ServerSocket serverSocket) {
+    MiniServer(Socket sc, File selectedFile, List<Person> receivers, ServerSocket serverSocket) {
         this.sc = sc;
         this.selectedFile = selectedFile;
-        this.receiverHostName = receiverHostName;
+        this.receivers = receivers;
         this.serverSocket = serverSocket;
     }
 
@@ -45,9 +46,16 @@ class MiniServer implements Runnable {
             try {
                 FileInputStream fis = new FileInputStream(selectedFile);
                 long size = selectedFile.length();
-                if (receiverHostName != null) {
-                    dos.writeInt(receiverHostName.length());
-                    dos.writeChars(receiverHostName);
+                if (receivers != null) {
+                    dos.writeInt(receivers.size());
+                    for (int i = 0; i < receivers.size(); i++) {
+                        dos.writeChar('A');
+                    }
+                    for (Person receiver : receivers) {
+                        String receiverHostName = receiver.getHostName();
+                        dos.writeInt(receiverHostName.length());
+                        dos.writeChars(receiverHostName);
+                    }
                 }
                 dos.writeInt(selectedFile.getName().length());
                 dos.writeChars(selectedFile.getName());
@@ -65,7 +73,7 @@ class MiniServer implements Runnable {
                     }
                 }
                 fis.close();
-                if (receiverHostName != null) {
+                if (receivers != null) {
                     JOptionPane.showMessageDialog(null, "Transfer of " + selectedFile + " completed");
                 }
                 if (serverSocket != null) {

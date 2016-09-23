@@ -5,6 +5,7 @@ import java.io.DataInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -36,16 +37,27 @@ class MiniClient implements Runnable {
             }
             String filename = sb.toString();
             String actualFileName = filename;
-            Queue<String> fileList = null;
+            Map<String, Queue<String>> receiverFileList = new HashMap<>();
             if (clientFileListMap != null) {
-                fileList = clientFileListMap.containsKey(filename)
-                        ? clientFileListMap.get(filename) : new ConcurrentLinkedQueue<String>();
+                for (int i = 0; i < filenameLen; i++) {
+                    int receiverNameLen = dis.readInt();
+                    sb = new StringBuilder();
+                    for (int j = 0; j < receiverNameLen; j++) {
+                        sb.append(dis.readChar());
+                    }
+                    String receiverName = sb.toString();
+                    receiverFileList.put(receiverName, clientFileListMap.containsKey(receiverName)
+                            ? clientFileListMap.get(receiverName) : new ConcurrentLinkedQueue<String>());
+                }
                 filenameLen = dis.readInt();
                 sb = new StringBuilder();
                 for (int i = 0; i < filenameLen; i++) {
                     sb.append(dis.readChar());
                 }
-                fileList.add(actualFileName = sb.toString());
+                actualFileName = sb.toString();
+                for (Queue<String> fileList : receiverFileList.values()) {
+                    fileList.add(actualFileName);
+                }
             }
             long size = dis.readLong();
             byte[] b = new byte[1024 * 1024];
@@ -61,9 +73,9 @@ class MiniClient implements Runnable {
             }
             fos.close();
             if (clientFileListMap == null) {
-                JOptionPane.showMessageDialog(null, "Received " + filename);
+                JOptionPane.showMessageDialog(null, "Received " + actualFileName);
             } else {
-                clientFileListMap.put(filename, fileList);
+                clientFileListMap.putAll(receiverFileList);
             }
             dis.close();
         } catch (IOException e) {
