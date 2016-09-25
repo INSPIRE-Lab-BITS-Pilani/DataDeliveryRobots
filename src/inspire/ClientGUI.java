@@ -18,9 +18,9 @@ public class ClientGUI {
     private JTable clientListTable;
     private JButton chooseFileButton;
     private JButton sendButton;
-    private JTextArea filePath;
     private JPanel rootPanel;
     private JButton downloadsFolderButton;
+    private JList fileList;
 
     private String ip;
     private List<Person> clientList;
@@ -63,7 +63,6 @@ public class ClientGUI {
                 int result = fileChooser.showOpenDialog(rootPanel);
                 if (result == JFileChooser.APPROVE_OPTION) {
                     selectedFile = fileChooser.getSelectedFile();
-                    filePath.append(selectedFile.getAbsolutePath() + "\n");
                 }
             }
         });

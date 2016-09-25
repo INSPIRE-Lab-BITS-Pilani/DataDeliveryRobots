@@ -68,7 +68,7 @@
         <properties/>
         <border type="none"/>
         <children>
-          <component id="32ac4" class="javax.swing.JTextArea" binding="filePath">
+          <component id="4c455" class="javax.swing.JList" binding="fileList">
             <constraints/>
             <properties/>
           </component>
