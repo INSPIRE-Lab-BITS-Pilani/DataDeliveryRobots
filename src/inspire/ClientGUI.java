@@ -27,12 +27,14 @@ public class ClientGUI {
     private Client cl;
     private CustomTableModel tm;
     private File selectedFile;
+    private List<File> selectedFiles;
     private String downloadsFolder;
     private String mHostName;
 
     private ClientGUI(String ip) {
         this.ip = ip;
         clientList = new ArrayList<>();
+        selectedFiles = new ArrayList<>();
         tm = new CustomTableModel(clientList);
         downloadsFolder = System.getProperty("user.home") + "/Downloads";
         fileList.setModel(new DefaultListModel());
@@ -67,6 +69,7 @@ public class ClientGUI {
                     DefaultListModel model = (DefaultListModel) fileList.getModel();
                     model.addElement(selectedFile.getAbsolutePath());
                     fileList.setModel(model);
+                    selectedFiles.add(selectedFile);
                 }
             }
         });
