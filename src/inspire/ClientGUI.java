@@ -35,6 +35,7 @@ public class ClientGUI {
         clientList = new ArrayList<>();
         tm = new CustomTableModel(clientList);
         downloadsFolder = System.getProperty("user.home") + "/Downloads";
+        fileList.setModel(new DefaultListModel());
 
         startClientButton.addActionListener(new ActionListener() {
             @Override
@@ -63,6 +64,9 @@ public class ClientGUI {
                 int result = fileChooser.showOpenDialog(rootPanel);
                 if (result == JFileChooser.APPROVE_OPTION) {
                     selectedFile = fileChooser.getSelectedFile();
+                    DefaultListModel model = (DefaultListModel) fileList.getModel();
+                    model.addElement(selectedFile.getAbsolutePath());
+                    fileList.setModel(model);
                 }
             }
         });
