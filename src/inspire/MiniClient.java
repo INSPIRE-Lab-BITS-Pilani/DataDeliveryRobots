@@ -30,16 +30,11 @@ class MiniClient implements Runnable {
     @Override
     public void run() {
         try {
-            int filenameLen = dis.readInt();
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < filenameLen; i++) {
-                sb.append(dis.readChar());
-            }
-            String filename = sb.toString();
-            String actualFileName = filename;
+            int receiverSize = dis.readInt();
+            StringBuilder sb;
             Map<String, Queue<String>> receiverFileList = new HashMap<>();
-            if (clientFileListMap != null) {
-                for (int i = 0; i < filenameLen; i++) {
+            if (clientFileListMap != null && receiverSize != 0) {
+                for (int i = 0; i < receiverSize; i++) {
                     int receiverNameLen = dis.readInt();
                     sb = new StringBuilder();
                     for (int j = 0; j < receiverNameLen; j++) {
@@ -49,31 +44,36 @@ class MiniClient implements Runnable {
                     receiverFileList.put(receiverName, clientFileListMap.containsKey(receiverName)
                             ? clientFileListMap.get(receiverName) : new ConcurrentLinkedQueue<String>());
                 }
-                filenameLen = dis.readInt();
+            }
+            int numberOfFiles = dis.readInt();
+            for(int i = 0; i < numberOfFiles; i++) {
+                int filenameLen = dis.readInt();
                 sb = new StringBuilder();
-                for (int i = 0; i < filenameLen; i++) {
+                for (int j = 0; j < filenameLen; j++) {
                     sb.append(dis.readChar());
                 }
-                actualFileName = sb.toString();
-                for (Queue<String> fileList : receiverFileList.values()) {
-                    fileList.add(actualFileName);
+                String actualFileName = sb.toString();
+                if (clientFileListMap != null && receiverSize != 0) {
+                    for (Queue<String> fileList : receiverFileList.values()) {
+                        fileList.add(actualFileName);
+                    }
                 }
-            }
-            long size = dis.readLong();
-            byte[] b = new byte[1024 * 1024];
-            long count = 0;
-            FileOutputStream fos = new FileOutputStream(downloadsFolder + "/" + actualFileName);
-            while (true) {
-                int r = dis.read(b, 0, 1024 * 1024);
-                fos.write(b, 0, r);
-                count += r;
-                if (count == size) {
-                    break;
+                long size = dis.readLong();
+                byte[] b = new byte[1024 * 1024];
+                long count = 0;
+                FileOutputStream fos = new FileOutputStream(downloadsFolder + "/" + actualFileName);
+                while (true) {
+                    int r = dis.read(b, 0, (size - count) > 1024 * 1024 ? 1024 * 1024: (int) (size - count));
+                    fos.write(b, 0, r);
+                    count += r;
+                    if (count == size) {
+                        break;
+                    }
                 }
+                fos.close();
             }
-            fos.close();
             if (clientFileListMap == null) {
-                JOptionPane.showMessageDialog(null, "Received " + actualFileName);
+                JOptionPane.showMessageDialog(null, "Received the files");
             } else {
                 clientFileListMap.putAll(receiverFileList);
             }

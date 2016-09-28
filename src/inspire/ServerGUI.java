@@ -33,7 +33,7 @@ public class ServerGUI {
             public void actionPerformed(ActionEvent e) {
                 try {
                     File f = new File(System.getProperty("java.io.tmpdir") + "/" + "__ClientListFile__.txt");
-                    File clientListFile = null;
+                    File clientListFile;
                     int result = JOptionPane.NO_OPTION;
                     if (f.exists()) {
                         Scanner sc = new Scanner(f);
@@ -144,25 +144,27 @@ public class ServerGUI {
                 PrintWriter pw = new PrintWriter(clientSocket.getOutputStream());
 
                 new ListPasser(brn, pw);
-                Map<MiniServer, Map<String, File>> threadMap = new ConcurrentHashMap<>();
+                Map<MiniServer, Map<String, Queue<File>>> threadMap = new ConcurrentHashMap<>();
                 new MiniServerHandler(serverSocket, threadMap);
                 while (true) {
-                    for (Iterator<Map.Entry<MiniServer, Map<String, File>>> it = threadMap.entrySet().iterator();
+                    for (Iterator<Map.Entry<MiniServer, Map<String, Queue<File>>>> it = threadMap.entrySet().iterator();
                          it.hasNext(); ) {
-                        Map.Entry<MiniServer, Map<String, File>> entry = it.next();
+                        Map.Entry<MiniServer, Map<String, Queue<File>>> entry = it.next();
                         Thread thread = entry.getKey().reqHandlerThread;
                         if (thread != null && thread.getState() == Thread.State.TERMINATED) {
                             for (String sockHostName : entry.getValue().keySet()) {
-                                clientFileListMap.get(sockHostName).remove(entry.getValue().get(sockHostName).getName());
-                                boolean flag = true;
-                                for (Queue<String> q : clientFileListMap.values()) {
-                                    if (q.contains(entry.getValue().get(sockHostName).getName())) {
-                                        flag = false;
-                                        break;
-                                    }
-                                }
-                                if (flag) {
-                                    entry.getValue().get(sockHostName).delete();
+                                for(int i = 0; i < entry.getValue().get(sockHostName).size(); i++) {
+                                    //clientFileListMap.get(sockHostName).remove(entry.getValue().get(sockHostName).element().getName());
+                                    //boolean flag = true;
+                                    //for (Queue<String> q : clientFileListMap.values()) {
+                                    //    if (q.contains(entry.getValue().get(sockHostName).element().getName())) {
+                                    //       flag = false;
+                                    //        break;
+                                    //    }
+                                    //}
+                                    //if (flag) {
+                                    //    entry.getValue().get(sockHostName).element().delete();
+                                    //}
                                 }
                             }
                             it.remove();
@@ -186,9 +188,9 @@ public class ServerGUI {
 
         private class MiniServerHandler implements Runnable {
             ServerSocket serverSocket;
-            Map<MiniServer, Map<String, File>> threadMap;
+            Map<MiniServer, Map<String, Queue<File>>> threadMap;
 
-            MiniServerHandler(ServerSocket serverSocket, Map<MiniServer, Map<String, File>> threadMap) {
+            MiniServerHandler(ServerSocket serverSocket, Map<MiniServer, Map<String, Queue<File>>> threadMap) {
                 this.serverSocket = serverSocket;
                 this.threadMap = threadMap;
                 Thread t = new Thread(this);
@@ -202,14 +204,23 @@ public class ServerGUI {
                         Socket sc = serverSocket.accept();
                         String hostName = getHostName(sc);
                         if (clientFileListMap.containsKey(hostName)) {
-                            for (String filename : clientFileListMap.get(hostName)) {
-                                File f = new File(downloadsFolder + "/" + filename);
-                                MiniServer ms;
-                                Thread t = new Thread(ms = new MiniServer(sc, f, null, null));
-                                t.start();
-                                Map<String, File> fileMap = Collections.singletonMap(hostName, f);
-                                threadMap.put(ms, fileMap);
+                            List<File> tempFileList = new ArrayList<>();
+                            MiniServer ms;
+                            Queue<File> q = new LinkedList<>();
+                            Queue<String> files;
+                            synchronized (clientFileListMap) {
+                                files = clientFileListMap.get(hostName);
+                                clientFileListMap.remove(hostName);
                             }
+                            for (String filename : files) {
+                                File f = new File(downloadsFolder + "/" + filename);
+                                tempFileList.add(f);
+                                q.add(f);
+                            }
+                            Thread t = new Thread(ms = new MiniServer(sc, tempFileList, null, null));
+                            t.start();
+                            Map<String, Queue<File>> fileMap = Collections.singletonMap(hostName, q);
+                            threadMap.put(ms, fileMap);
                             Thread.sleep(4000);
                         } else {
                             sc.close();

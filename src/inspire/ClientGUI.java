@@ -21,6 +21,7 @@ public class ClientGUI {
     private JPanel rootPanel;
     private JButton downloadsFolderButton;
     private JList fileList;
+    private JButton deleteFilesButton;
 
     private String ip;
     private List<Person> clientList;
@@ -78,20 +79,22 @@ public class ClientGUI {
             public void actionPerformed(ActionEvent e) {
                 int x = clientListTable.getSelectedRowCount();
                 if (x != 0) {
-                    if (selectedFile != null) {
+                    if (selectedFiles.size() != 0) {
                         List<Person> selectedPeople = new ArrayList<>();
                         for (int n : clientListTable.getSelectedRows()) {
                             selectedPeople.add(clientList.get(n));
                         }
-                        int result = JOptionPane.showConfirmDialog(null, "Send " + selectedFile + " to "
+                        int result = JOptionPane.showConfirmDialog(null, "Send selected files to "
                                 + selectedPeople + "?");
                         if (result == JOptionPane.YES_OPTION) {
                             try {
                                 ServerSocket sersock = new ServerSocket(9600 + clientList.indexOf(new Person(null,
                                         mHostName)) + 1);
-                                JOptionPane.showMessageDialog(null, "Transfer of " + selectedFile + " started");
+                                JOptionPane.showMessageDialog(null, "Transfer of selected files started");
                                 Socket sc = sersock.accept();
-                                new Thread(new MiniServer(sc, selectedFile, selectedPeople, sersock)).start();
+                                new Thread(new MiniServer(sc, selectedFiles, selectedPeople, sersock)).start();
+                                selectedFiles = new ArrayList<>();
+                                fileList.setModel(new DefaultListModel());
                             } catch (IOException e1) {
                                 e1.printStackTrace();
                             }
@@ -114,6 +117,18 @@ public class ClientGUI {
                 if (result == JFileChooser.APPROVE_OPTION) {
                     downloadsFolder = fileChooser.getSelectedFile().getAbsolutePath();
                 }
+            }
+        });
+        deleteFilesButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                DefaultListModel model = (DefaultListModel) fileList.getModel();
+                int[] indices = fileList.getSelectedIndices();
+                for(int i = indices.length - 1; i >= 0; i--) {
+                    model.remove(indices[i]);
+                    selectedFiles.remove(indices[i]);
+                }
+                fileList.setModel(model);
             }
         });
     }

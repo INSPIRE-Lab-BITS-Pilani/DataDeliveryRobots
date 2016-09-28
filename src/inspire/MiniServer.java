@@ -11,14 +11,14 @@ import java.util.List;
 
 class MiniServer implements Runnable {
     private Socket sc;
-    private File selectedFile;
+    private List<File> selectedFiles;
     private List<Person> receivers;
     private ServerSocket serverSocket;
     Thread reqHandlerThread;
 
-    MiniServer(Socket sc, File selectedFile, List<Person> receivers, ServerSocket serverSocket) {
+    MiniServer(Socket sc, List<File> selectedFiles, List<Person> receivers, ServerSocket serverSocket) {
         this.sc = sc;
-        this.selectedFile = selectedFile;
+        this.selectedFiles = selectedFiles;
         this.receivers = receivers;
         this.serverSocket = serverSocket;
     }
@@ -44,37 +44,41 @@ class MiniServer implements Runnable {
         @Override
         public void run() {
             try {
-                FileInputStream fis = new FileInputStream(selectedFile);
-                long size = selectedFile.length();
                 if (receivers != null) {
                     dos.writeInt(receivers.size());
-                    for (int i = 0; i < receivers.size(); i++) {
-                        dos.writeChar('A');
-                    }
                     for (Person receiver : receivers) {
                         String receiverHostName = receiver.getHostName();
                         dos.writeInt(receiverHostName.length());
                         dos.writeChars(receiverHostName);
                     }
                 }
-                dos.writeInt(selectedFile.getName().length());
-                dos.writeChars(selectedFile.getName());
-                dos.writeLong(size);
-                dos.flush();
-                byte[] b = new byte[1024 * 1024];
-                long count = 0;
-                while (true) {
-                    int r = fis.read(b, 0, 1024 * 1024);
-                    dos.write(b, 0, r);
-                    dos.flush();
-                    count += r;
-                    if (count == size) {
-                        break;
-                    }
+                else {
+                    dos.writeInt(0);
                 }
-                fis.close();
+                dos.writeInt(selectedFiles.size());
+                for(int i = 0; i < selectedFiles.size(); i++) {
+                    File selectedFile = selectedFiles.get(i);
+                    FileInputStream fis = new FileInputStream(selectedFile);
+                    long size = selectedFile.length();
+                    dos.writeInt(selectedFile.getName().length());
+                    dos.writeChars(selectedFile.getName());
+                    dos.writeLong(size);
+                    dos.flush();
+                    byte[] b = new byte[1024 * 1024];
+                    long count = 0;
+                    while (true) {
+                        int r = fis.read(b, 0, 1024 * 1024);
+                        dos.write(b, 0, r);
+                        dos.flush();
+                        count += r;
+                        if (count == size) {
+                            break;
+                        }
+                    }
+                    fis.close();
+                }
                 if (receivers != null) {
-                    JOptionPane.showMessageDialog(null, "Transfer of " + selectedFile + " completed");
+                    JOptionPane.showMessageDialog(null, "Transfer of " + selectedFiles + " completed");
                 }
                 if (serverSocket != null) {
                     serverSocket.close();
