@@ -51,12 +51,11 @@ class MiniServer implements Runnable {
                         dos.writeInt(receiverHostName.length());
                         dos.writeChars(receiverHostName);
                     }
-                }
-                else {
+                } else {
                     dos.writeInt(0);
                 }
                 dos.writeInt(selectedFiles.size());
-                for(int i = 0; i < selectedFiles.size(); i++) {
+                for (int i = 0; i < selectedFiles.size(); i++) {
                     File selectedFile = selectedFiles.get(i);
                     FileInputStream fis = new FileInputStream(selectedFile);
                     long size = selectedFile.length();

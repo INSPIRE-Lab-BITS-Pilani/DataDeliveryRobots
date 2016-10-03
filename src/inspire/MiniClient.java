@@ -46,7 +46,7 @@ class MiniClient implements Runnable {
                 }
             }
             int numberOfFiles = dis.readInt();
-            for(int i = 0; i < numberOfFiles; i++) {
+            for (int i = 0; i < numberOfFiles; i++) {
                 int filenameLen = dis.readInt();
                 sb = new StringBuilder();
                 for (int j = 0; j < filenameLen; j++) {
@@ -63,7 +63,7 @@ class MiniClient implements Runnable {
                 long count = 0;
                 FileOutputStream fos = new FileOutputStream(downloadsFolder + "/" + actualFileName);
                 while (true) {
-                    int r = dis.read(b, 0, (size - count) > 1024 * 1024 ? 1024 * 1024: (int) (size - count));
+                    int r = dis.read(b, 0, (size - count) > 1024 * 1024 ? 1024 * 1024 : (int) (size - count));
                     fos.write(b, 0, r);
                     count += r;
                     if (count == size) {

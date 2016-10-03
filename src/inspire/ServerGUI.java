@@ -20,7 +20,7 @@ public class ServerGUI {
     private List<Person> clientList;
     private CustomTableModel tm;
     private String downloadsFolder;
-    private Map<String, Queue<String>> clientFileListMap;
+    private final Map<String, Queue<String>> clientFileListMap;
 
     private ServerGUI() {
         clientList = new ArrayList<>();
@@ -153,18 +153,21 @@ public class ServerGUI {
                         Thread thread = entry.getKey().reqHandlerThread;
                         if (thread != null && thread.getState() == Thread.State.TERMINATED) {
                             for (String sockHostName : entry.getValue().keySet()) {
-                                for(int i = 0; i < entry.getValue().get(sockHostName).size(); i++) {
-                                    //clientFileListMap.get(sockHostName).remove(entry.getValue().get(sockHostName).element().getName());
-                                    //boolean flag = true;
-                                    //for (Queue<String> q : clientFileListMap.values()) {
-                                    //    if (q.contains(entry.getValue().get(sockHostName).element().getName())) {
-                                    //       flag = false;
-                                    //        break;
-                                    //    }
-                                    //}
-                                    //if (flag) {
-                                    //    entry.getValue().get(sockHostName).element().delete();
-                                    //}
+                                for (File f : entry.getValue().get(sockHostName)) {
+                                    clientFileListMap.get(sockHostName).remove(f.getName());
+                                    boolean flag = true;
+                                    for (Queue<String> q : clientFileListMap.values()) {
+                                        if (q.contains(f.getName())) {
+                                            flag = false;
+                                            break;
+                                        }
+                                    }
+                                    if (flag) {
+                                        f.delete();
+                                    }
+                                }
+                                synchronized (clientFileListMap) {
+                                    clientFileListMap.remove(sockHostName);
                                 }
                             }
                             it.remove();
@@ -207,12 +210,7 @@ public class ServerGUI {
                             List<File> tempFileList = new ArrayList<>();
                             MiniServer ms;
                             Queue<File> q = new LinkedList<>();
-                            Queue<String> files;
-                            synchronized (clientFileListMap) {
-                                files = clientFileListMap.get(hostName);
-                                clientFileListMap.remove(hostName);
-                            }
-                            for (String filename : files) {
+                            for (String filename : clientFileListMap.get(hostName)) {
                                 File f = new File(downloadsFolder + "/" + filename);
                                 tempFileList.add(f);
                                 q.add(f);
