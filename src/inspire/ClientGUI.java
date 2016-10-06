@@ -23,7 +23,6 @@ public class ClientGUI {
     private JList fileList;
     private JButton deleteFilesButton;
 
-    private String ip;
     private List<Person> clientList;
     private Client cl;
     private CustomTableModel tm;
@@ -32,18 +31,61 @@ public class ClientGUI {
     private String downloadsFolder;
     private String mHostName;
 
-    private ClientGUI(String ip) {
-        this.ip = ip;
+    private ClientGUI(String autoServerHostNames) {
         clientList = new ArrayList<>();
         selectedFiles = new ArrayList<>();
         tm = new CustomTableModel(clientList);
         downloadsFolder = System.getProperty("user.home") + "/Downloads";
         fileList.setModel(new DefaultListModel());
 
+        File f = new File(autoServerHostNames);
+        try {
+            Scanner sc = new Scanner(f);
+            List<String> hostNames = new ArrayList<>();
+            while (sc.hasNextLine()) {
+                hostNames.add(sc.nextLine());
+            }
+            new Thread(new AutoServerConnector(hostNames)).start();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
         startClientButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                cl = new Client(ClientGUI.this.ip);
+                File f = new File(System.getProperty("java.io.tmpdir") + "/" + "__ServerHostName__.txt");
+                String ip = null;
+                int result = JOptionPane.NO_OPTION;
+                if (f.exists()) {
+                    try {
+                        Scanner sc = new Scanner(f);
+                        ip = sc.nextLine();
+                        sc.close();
+                        result = JOptionPane.showConfirmDialog(rootPanel, "Use " + ip + " as the server host name?");
+                    } catch (FileNotFoundException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+                if (!f.exists() || result != JOptionPane.YES_OPTION) {
+                    ip = JOptionPane.showInputDialog("Enter the host name of the server");
+                    if (ip != null) {
+                        try {
+                            PrintStream ps = new PrintStream(f);
+                            ps.println(ip);
+                            ps.close();
+                        } catch (FileNotFoundException e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+                }
+                if (ip != null) {
+                    try {
+                        cl = new Client(ip);
+                    } catch (IOException e1) {
+                        JOptionPane.showMessageDialog(rootPanel, "Cannot connect to server");
+                        e1.printStackTrace();
+                    }
+                }
             }
         });
         getListButton.addActionListener(new ActionListener() {
@@ -134,7 +176,7 @@ public class ClientGUI {
     }
 
     public static void main(String[] args) {
-        File f = new File(System.getProperty("java.io.tmpdir") + "/" + "__ServerHostName__.txt");
+        File f = new File(System.getProperty("java.io.tmpdir") + "/" + "__AutoServerHostNames__.txt");
         String ip = null;
         int result = JOptionPane.NO_OPTION;
         if (f.exists()) {
@@ -142,14 +184,21 @@ public class ClientGUI {
                 Scanner sc = new Scanner(f);
                 ip = sc.nextLine();
                 sc.close();
-                result = JOptionPane.showConfirmDialog(null, "Use " + ip + " as the server host name?");
+                result = JOptionPane.showConfirmDialog(null, "Use " + ip + " as the automatic server host names file?");
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
         }
         if (!f.exists() || result != JOptionPane.YES_OPTION) {
-            ip = JOptionPane.showInputDialog("Enter the host name of the server");
-            if (ip != null) {
+            ip = null;
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
+            fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            fileChooser.setDialogTitle("Choose automatic server host names file");
+            result = fileChooser.showOpenDialog(null);
+            if (result == JFileChooser.APPROVE_OPTION) {
+                File selectedFile = fileChooser.getSelectedFile();
+                ip = selectedFile.getAbsolutePath();
                 try {
                     PrintStream ps = new PrintStream(f);
                     ps.println(ip);
@@ -169,33 +218,35 @@ public class ClientGUI {
     }
 
     private class Client implements Runnable {
+        private String hostName;
         private BufferedReader brn;
         private PrintWriter pw;
 
-        public Client(String ip) {
-            try {
-                Socket sock = new Socket(ip, 9000);
-                mHostName = InetAddress.getLocalHost().getHostName();
-                brn = new BufferedReader(new InputStreamReader(sock.getInputStream()));
-                pw = new PrintWriter(sock.getOutputStream());
-                Thread t = new Thread(this);
-                t.start();
-            } catch (IOException e) {
-                JOptionPane.showMessageDialog(null, "Cannot connect to server");
-                e.printStackTrace();
-            }
+        public Client(String ip) throws IOException {
+            Socket sock = new Socket(ip, 9000);
+            hostName = ip;
+            mHostName = InetAddress.getLocalHost().getHostName();
+            brn = new BufferedReader(new InputStreamReader(sock.getInputStream()));
+            pw = new PrintWriter(sock.getOutputStream());
+            Thread t = new Thread(this);
+            t.start();
         }
 
         @Override
         public void run() {
+            JOptionPane.showMessageDialog(rootPanel, "Connected to " + hostName);
             new ListReader(brn);
             while (true) {
                 try {
-                    Socket sc = new Socket(ip, 9600);
+                    Socket sc = new Socket(hostName, 9600);
                     new MiniClient(sc, null, downloadsFolder);
                     Thread.sleep(4000);
                 } catch (IOException e) {
-                    // Do nothing.
+                    JOptionPane.showMessageDialog(rootPanel, "Disconnected from " + hostName);
+                    cl = null;
+                    clientList.clear();
+                    tm.fireTableDataChanged();
+                    break;
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -233,6 +284,29 @@ public class ClientGUI {
             } catch (IOException e) {
                 JOptionPane.showMessageDialog(null, "Main Server is not running");
                 e.printStackTrace();
+            }
+        }
+    }
+
+    private class AutoServerConnector implements Runnable {
+        private List<String> hostNames;
+
+        AutoServerConnector(List<String> hostNames) {
+            this.hostNames = hostNames;
+        }
+
+        @Override
+        public void run() {
+            while (true) {
+                if (cl == null) {
+                    for (String hostName : hostNames) {
+                        try {
+                            cl = new Client(hostName);
+                        } catch (IOException e) {
+                            // Do nothing.
+                        }
+                    }
+                }
             }
         }
     }
