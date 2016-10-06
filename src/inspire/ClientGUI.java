@@ -302,10 +302,16 @@ public class ClientGUI {
                     for (String hostName : hostNames) {
                         try {
                             cl = new Client(hostName);
+                            break;
                         } catch (IOException e) {
                             // Do nothing.
                         }
                     }
+                }
+                try {
+                    Thread.sleep(4000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
             }
         }
