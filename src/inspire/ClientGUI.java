@@ -43,7 +43,10 @@ public class ClientGUI {
             Scanner sc = new Scanner(f);
             List<String> hostNames = new ArrayList<>();
             while (sc.hasNextLine()) {
-                hostNames.add(sc.nextLine());
+                String hName = sc.nextLine();
+                if (!hName.isEmpty()) {
+                    hostNames.add(hName);
+                }
             }
             new Thread(new AutoServerConnector(hostNames)).start();
         } catch (FileNotFoundException e) {
@@ -53,38 +56,42 @@ public class ClientGUI {
         startClientButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                File f = new File(System.getProperty("java.io.tmpdir") + "/" + "__ServerHostName__.txt");
-                String ip = null;
-                int result = JOptionPane.NO_OPTION;
-                if (f.exists()) {
-                    try {
-                        Scanner sc = new Scanner(f);
-                        ip = sc.nextLine();
-                        sc.close();
-                        result = JOptionPane.showConfirmDialog(rootPanel, "Use " + ip + " as the server host name?");
-                    } catch (FileNotFoundException e1) {
-                        e1.printStackTrace();
-                    }
-                }
-                if (!f.exists() || result != JOptionPane.YES_OPTION) {
-                    ip = JOptionPane.showInputDialog("Enter the host name of the server");
-                    if (ip != null) {
+                if (cl == null) {
+                    File f = new File(System.getProperty("java.io.tmpdir") + "/" + "__ServerHostName__.txt");
+                    String ip = null;
+                    int result = JOptionPane.NO_OPTION;
+                    if (f.exists()) {
                         try {
-                            PrintStream ps = new PrintStream(f);
-                            ps.println(ip);
-                            ps.close();
+                            Scanner sc = new Scanner(f);
+                            ip = sc.nextLine();
+                            sc.close();
+                            result = JOptionPane.showConfirmDialog(rootPanel, "Use " + ip + " as the server host name?");
                         } catch (FileNotFoundException e1) {
                             e1.printStackTrace();
                         }
                     }
-                }
-                if (ip != null) {
-                    try {
-                        cl = new Client(ip);
-                    } catch (IOException e1) {
-                        JOptionPane.showMessageDialog(rootPanel, "Cannot connect to server");
-                        e1.printStackTrace();
+                    if (!f.exists() || result != JOptionPane.YES_OPTION) {
+                        ip = JOptionPane.showInputDialog("Enter the host name of the server");
+                        if (ip != null) {
+                            try {
+                                PrintStream ps = new PrintStream(f);
+                                ps.println(ip);
+                                ps.close();
+                            } catch (FileNotFoundException e1) {
+                                e1.printStackTrace();
+                            }
+                        }
                     }
+                    if (ip != null) {
+                        try {
+                            cl = new Client(ip);
+                        } catch (IOException e1) {
+                            JOptionPane.showMessageDialog(rootPanel, "Cannot connect to server");
+                            e1.printStackTrace();
+                        }
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(rootPanel, "You are already connected to " + cl.hostName);
                 }
             }
         });
