@@ -28,16 +28,27 @@ class CustomTableModel extends AbstractTableModel {
         return columns[i].getClass();
     }
 
+    /**
+     * @return the number of rows in the model
+     */
     @Override
     public int getRowCount() {
         return clientList.size();
     }
 
+    /**
+     * @return the number of columns in the model
+     */
     @Override
     public int getColumnCount() {
         return columns.length;
     }
 
+    /**
+     * @param rowIndex the row whose value is to be queried
+     * @param columnIndex the column whose value is to be queried
+     * @return the value Object at the specified cell
+     */
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
         return clientList.get(rowIndex);
