@@ -12,6 +12,9 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.StringTokenizer;
 
+/**
+ * The top-level client class including GUI elements.
+ */
 public class ClientGUI {
     private JButton startClientButton;
     private JButton getListButton;
@@ -182,6 +185,9 @@ public class ClientGUI {
         });
     }
 
+    /**
+     * @param args the program arguments (ignored)
+     */
     public static void main(String[] args) {
         File f = new File(System.getProperty("java.io.tmpdir") + "/" + "__AutoServerHostNames__.txt");
         String ip = null;

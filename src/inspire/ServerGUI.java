@@ -11,6 +11,9 @@ import java.net.UnknownHostException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * The top-level server class including GUI elements.
+ */
 public class ServerGUI {
     private JPanel rootPanel;
     private JButton startServerButton;
@@ -92,6 +95,9 @@ public class ServerGUI {
         tm.fireTableDataChanged();
     }
 
+    /**
+     * @param args the program arguments (ignored)
+     */
     public static void main(String[] args) {
         JFrame frame = new JFrame("ServerGUI");
         frame.setContentPane(new ServerGUI().rootPanel);
