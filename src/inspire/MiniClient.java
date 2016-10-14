@@ -19,6 +19,11 @@ class MiniClient implements Runnable {
     private Map<String, Queue<String>> clientFileListMap;
     private String downloadsFolder;
 
+    /**
+     * @param sc the socket from which the received files should be read
+     * @param clientFileListMap map from client host names to the names of files that need to be transferred to them
+     * @param downloadsFolder the folder in which the received files should be stored
+     */
     MiniClient(Socket sc, Map<String, Queue<String>> clientFileListMap, String downloadsFolder) {
         this.clientFileListMap = clientFileListMap;
         this.downloadsFolder = downloadsFolder;
