@@ -10,6 +10,10 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+/**
+ * The "actual" client class; it is responsible for receiving files sent by the MiniServer instances. It is utilized by
+ * both the Server and Client classes.
+ */
 class MiniClient implements Runnable {
     private DataInputStream dis;
     private Map<String, Queue<String>> clientFileListMap;

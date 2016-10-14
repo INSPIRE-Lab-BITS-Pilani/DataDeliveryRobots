@@ -9,6 +9,10 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
 
+/**
+ * The "actual" server class; it is responsible for sending files to the MiniClient instances. It is utilized by both
+ * the Server and Client classes.
+ */
 class MiniServer implements Runnable {
     private Socket sc;
     private List<File> selectedFiles;
