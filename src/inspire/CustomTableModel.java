@@ -45,7 +45,7 @@ class CustomTableModel extends AbstractTableModel {
     }
 
     /**
-     * @param rowIndex the row whose value is to be queried
+     * @param rowIndex    the row whose value is to be queried
      * @param columnIndex the column whose value is to be queried
      * @return the value Object at the specified cell
      */

@@ -11,7 +11,7 @@ class Person {
     private String hostName;
 
     /**
-     * @param name human-readable identifier for the client
+     * @param name     human-readable identifier for the client
      * @param hostName the client's host name
      */
     Person(String name, String hostName) {
