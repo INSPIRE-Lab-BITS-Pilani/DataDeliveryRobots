@@ -60,27 +60,34 @@ class MiniServer implements Runnable {
         public void run() {
             try {
                 if (receivers != null) {
+                    // Client
                     dos.writeInt(receivers.size());
                     for (Person receiver : receivers) {
+                        // Host name of the receiver
                         String receiverHostName = receiver.getHostName();
                         dos.writeInt(receiverHostName.length());
                         dos.writeChars(receiverHostName);
                     }
                 } else {
+                    // Server
                     dos.writeInt(0);
                 }
                 dos.writeInt(selectedFiles.size());
-                for (int i = 0; i < selectedFiles.size(); i++) {
-                    File selectedFile = selectedFiles.get(i);
+                for (File selectedFile : selectedFiles) {
+                    // Stream to read the file
                     FileInputStream fis = new FileInputStream(selectedFile);
+                    // Size of the file
                     long size = selectedFile.length();
                     dos.writeInt(selectedFile.getName().length());
                     dos.writeChars(selectedFile.getName());
                     dos.writeLong(size);
                     dos.flush();
+                    // Buffer to store part of the file
                     byte[] b = new byte[1024 * 1024];
+                    // Bytes read so far
                     long count = 0;
                     while (true) {
+                        // Number of bytes read
                         int r = fis.read(b, 0, 1024 * 1024);
                         dos.write(b, 0, r);
                         dos.flush();
@@ -92,9 +99,11 @@ class MiniServer implements Runnable {
                     fis.close();
                 }
                 if (receivers != null) {
+                    // Client
                     JOptionPane.showMessageDialog(null, "Transfer of " + selectedFiles + " completed");
                 }
                 if (serverSocket != null) {
+                    // Client
                     serverSocket.close();
                 }
                 dos.close();
