@@ -20,6 +20,13 @@ class MiniServer implements Runnable {
     private ServerSocket serverSocket;
     Thread reqHandlerThread;
 
+    /**
+     * @param sc the socket to which the files to be sent should be written
+     * @param selectedFiles list of files selected for sending
+     * @param receivers list of clients to which {@code selectedFiles} should be sent
+     * @param serverSocket the server socket created for sending (in the Client case, this should be closed after
+     *                     file transfer is complete)
+     */
     MiniServer(Socket sc, List<File> selectedFiles, List<Person> receivers, ServerSocket serverSocket) {
         this.sc = sc;
         this.selectedFiles = selectedFiles;
