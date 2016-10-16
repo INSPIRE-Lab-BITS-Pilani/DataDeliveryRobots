@@ -18,6 +18,10 @@ class MiniServer implements Runnable {
     private List<File> selectedFiles;
     private List<Person> receivers;
     private ServerSocket serverSocket;
+    /**
+     * The thread created from this {@code MiniServer} instance. It is used in the Server class (once the thread
+     * terminates, the corresponding files can be removed from the {@code clientFileListMap} and deleted if possible).
+     */
     Thread reqHandlerThread;
 
     /**
