@@ -43,14 +43,18 @@ public class ServerGUI {
         downloadsFolder = System.getProperty("java.io.tmpdir");
         clientFileListMap = new HashMap<>();
 
+        // Start server
         startServerButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
+                    // Contains the name of the previously selected clientListFile, if it exists
                     File f = new File(System.getProperty("java.io.tmpdir") + "/" + "__ClientListFile__.txt");
+                    // The file containing the list of clients
                     File clientListFile;
                     int result = JOptionPane.NO_OPTION;
                     if (f.exists()) {
+                        // A clientListFile was selected previously
                         Scanner sc = new Scanner(f);
                         clientListFile = new File(sc.nextLine());
                         sc.close();
@@ -62,6 +66,7 @@ public class ServerGUI {
                         }
                     }
                     if (!f.exists() || result != JOptionPane.YES_OPTION) {
+                        // This is the first time the server is being started or the clientListFile has changed
                         JFileChooser fileChooser = new JFileChooser();
                         fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
                         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -82,6 +87,7 @@ public class ServerGUI {
             }
         });
         connectedTable.setModel(tm);
+        // Change the downloads folder
         downloadsFolderButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -96,6 +102,11 @@ public class ServerGUI {
         });
     }
 
+    /**
+     * @param clientListFile file containing the list of clients (each line in the file represents a unique client, with
+     *                       a human-readable identifier and the host name separated by spaces)
+     * @throws FileNotFoundException if {@code clientListFile} is not found
+     */
     private void populateClientList(File clientListFile) throws FileNotFoundException {
         Scanner sc = new Scanner(clientListFile);
         while (sc.hasNextLine()) {
@@ -249,6 +260,12 @@ public class ServerGUI {
         }
     }
 
+    /**
+     * @param sc the socket bound to the machine whose host name should be returned
+     * @return the actual host name of the machine to which the socket is bound (localhost is replaced by the canonical
+     * host name of the machine)
+     * @throws UnknownHostException if {@link InetAddress#getLocalHost()} fails
+     */
     private String getHostName(Socket sc) throws UnknownHostException {
         String hostName = sc.getInetAddress().getHostName();
         if (hostName.equals("localhost")) {
