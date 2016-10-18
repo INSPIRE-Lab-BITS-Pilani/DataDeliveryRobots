@@ -26,12 +26,29 @@ public class ClientGUI {
     private JList fileList;
     private JButton deleteFilesButton;
 
+    /**
+     * The list of clients.
+     */
     private List<Person> clientList;
+    /**
+     * The current {@link Client} instance.
+     */
     private Client cl;
+    /**
+     * {@code TableModel} implementation to view {@code clientList}.
+     */
     private CustomTableModel tm;
-    private File selectedFile;
+    /**
+     * List of files selected for sending.
+     */
     private List<File> selectedFiles;
+    /**
+     * The folder in which the received files should be stored.
+     */
     private String downloadsFolder;
+    /**
+     * Host name of the machine on which the client instance {@code cl} is running.
+     */
     private String mHostName;
 
     private ClientGUI(String autoServerHostNames) {
@@ -118,7 +135,7 @@ public class ClientGUI {
                 fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
                 int result = fileChooser.showOpenDialog(rootPanel);
                 if (result == JFileChooser.APPROVE_OPTION) {
-                    selectedFile = fileChooser.getSelectedFile();
+                    File selectedFile = fileChooser.getSelectedFile();
                     DefaultListModel model = (DefaultListModel) fileList.getModel();
                     model.addElement(selectedFile.getAbsolutePath());
                     fileList.setModel(model);

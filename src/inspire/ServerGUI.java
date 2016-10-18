@@ -25,7 +25,7 @@ public class ServerGUI {
      */
     private List<Person> clientList;
     /**
-     * {@code TableModel} implementation to view {@code clientList}
+     * {@code TableModel} implementation to view {@code clientList}.
      */
     private CustomTableModel tm;
     /**
