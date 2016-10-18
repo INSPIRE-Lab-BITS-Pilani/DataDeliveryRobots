@@ -20,9 +20,21 @@ public class ServerGUI {
     private JButton downloadsFolderButton;
     private JTable connectedTable;
 
+    /**
+     * The list of clients.
+     */
     private List<Person> clientList;
+    /**
+     * {@code TableModel} implementation to view {@code clientList}
+     */
     private CustomTableModel tm;
+    /**
+     * The folder in which the received files should be stored.
+     */
     private String downloadsFolder;
+    /**
+     * Map from client host names to the names of files that need to be transferred to them.
+     */
     private final Map<String, Queue<String>> clientFileListMap;
 
     private ServerGUI() {
