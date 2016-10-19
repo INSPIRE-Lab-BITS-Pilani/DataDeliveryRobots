@@ -50,7 +50,7 @@ public class ServerGUI {
                 try {
                     // Contains the name of the previously selected clientListFile, if it exists
                     File f = new File(System.getProperty("java.io.tmpdir") + "/" + "__ClientListFile__.txt");
-                    // The file containing the list of clients
+                    // Contains the list of clients
                     File clientListFile;
                     int result = JOptionPane.NO_OPTION;
                     if (f.exists()) {

@@ -51,6 +51,10 @@ public class ClientGUI {
      */
     private String mHostName;
 
+    /**
+     * @param autoServerHostNames host names of servers to which the client should automatically connect if the server
+     *                            is online and the client isn't connected to any other server
+     */
     private ClientGUI(String autoServerHostNames) {
         clientList = new ArrayList<>();
         selectedFiles = new ArrayList<>();
@@ -58,6 +62,7 @@ public class ClientGUI {
         downloadsFolder = System.getProperty("user.home") + "/Downloads";
         fileList.setModel(new DefaultListModel());
 
+        // Contains host names of servers to which the client should connect automatically
         File f = new File(autoServerHostNames);
         try {
             Scanner sc = new Scanner(f);
@@ -73,14 +78,18 @@ public class ClientGUI {
             e.printStackTrace();
         }
 
+        // Start client
         startClientButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (cl == null) {
+                    // Contains the host name of the previously selected server, if it exists
                     File f = new File(System.getProperty("java.io.tmpdir") + "/" + "__ServerHostName__.txt");
+                    // The host name of the selected server
                     String ip = null;
                     int result = JOptionPane.NO_OPTION;
                     if (f.exists()) {
+                        // A server was connected to previously
                         try {
                             Scanner sc = new Scanner(f);
                             ip = sc.nextLine();
@@ -91,6 +100,7 @@ public class ClientGUI {
                         }
                     }
                     if (!f.exists() || result != JOptionPane.YES_OPTION) {
+                        // The first time the client is being started or the client wants to connect to different server
                         ip = JOptionPane.showInputDialog("Enter the host name of the server");
                         if (ip != null) {
                             try {
@@ -115,6 +125,7 @@ public class ClientGUI {
                 }
             }
         });
+        // Get list of clients from the server
         getListButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -127,6 +138,7 @@ public class ClientGUI {
             }
         });
         clientListTable.setModel(tm);
+        // Add a file to the list of files to send
         chooseFileButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -143,6 +155,7 @@ public class ClientGUI {
                 }
             }
         });
+        // Send the selected list of files to the selected receivers
         sendButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -176,6 +189,7 @@ public class ClientGUI {
                 }
             }
         });
+        // Change the downloads folder
         downloadsFolderButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -188,6 +202,7 @@ public class ClientGUI {
                 }
             }
         });
+        // Delete the selected files from the list of files to send
         deleteFilesButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
@@ -206,10 +221,13 @@ public class ClientGUI {
      * @param args the program arguments (ignored)
      */
     public static void main(String[] args) {
+        // Contains the host names of servers to automatically connect to, if it exists
         File f = new File(System.getProperty("java.io.tmpdir") + "/" + "__AutoServerHostNames__.txt");
+        // Name (with absolute path) of the file containing host names of servers to automatically connect to
         String ip = null;
         int result = JOptionPane.NO_OPTION;
         if (f.exists()) {
+            // A file was chosen previously
             try {
                 Scanner sc = new Scanner(f);
                 ip = sc.nextLine();
@@ -220,6 +238,7 @@ public class ClientGUI {
             }
         }
         if (!f.exists() || result != JOptionPane.YES_OPTION) {
+            // The first time the client is being started or a different file needs to be selected
             ip = null;
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
