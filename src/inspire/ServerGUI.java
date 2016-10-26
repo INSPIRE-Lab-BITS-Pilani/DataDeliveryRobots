@@ -129,7 +129,13 @@ public class ServerGUI {
         frame.setVisible(true);
     }
 
+    /**
+     * The multi-threaded Server application class. It delegates each client connection to its own separate thread.
+     */
     private class Server implements Runnable {
+        /**
+         * The socket to which the clients must connect.
+         */
         private ServerSocket serverSocket;
 
         public Server() {
@@ -146,9 +152,11 @@ public class ServerGUI {
         @Override
         public void run() {
             try {
+                // The socket on the server side to which clients connect for getting files from the server
                 ServerSocket miniServerSocket = new ServerSocket(9600);
                 while (true) {
                     Socket clientSocket = serverSocket.accept();
+                    // Spawn a new thread for each client connection
                     new Thread(new WorkerRunnable(clientSocket, miniServerSocket)).start();
                 }
             } catch (IOException e) {
@@ -157,10 +165,18 @@ public class ServerGUI {
         }
     }
 
+    /**
+     * The class handling one client connection. It is responsible for sending files to and receiving files from that
+     * client.
+     */
     private class WorkerRunnable implements Runnable {
         private Socket clientSocket;
         private ServerSocket serverSocket;
 
+        /**
+         * @param clientSocket     the socket through which the client transfers files to the server
+         * @param miniServerSocket the socket through which the server transfers files to the client
+         */
         WorkerRunnable(Socket clientSocket, ServerSocket miniServerSocket) {
             this.clientSocket = clientSocket;
             this.serverSocket = miniServerSocket;
@@ -169,21 +185,29 @@ public class ServerGUI {
         @Override
         public void run() {
             try {
+                // Used to read whether the client requires the list of clients to be sent
                 BufferedReader brn = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                // Used to write the list of clients, if requested
                 PrintWriter pw = new PrintWriter(clientSocket.getOutputStream());
 
+                // Spawn a new thread which checks whether the client has requested the list of clients and sends them
                 new ListPasser(brn, pw);
+                // Map from a MiniServer instance to a map from the host name of client to the files transferred to it
                 Map<MiniServer, Map<String, Queue<File>>> threadMap = new ConcurrentHashMap<>();
+                // Spawn a new thread for handling file transfers to the client
                 new MiniServerHandler(serverSocket, threadMap);
                 while (true) {
                     for (Iterator<Map.Entry<MiniServer, Map<String, Queue<File>>>> it = threadMap.entrySet().iterator();
                          it.hasNext(); ) {
                         Map.Entry<MiniServer, Map<String, Queue<File>>> entry = it.next();
                         Thread thread = entry.getKey().reqHandlerThread;
+                        // If the thread has completed execution...
                         if (thread != null && thread.getState() == Thread.State.TERMINATED) {
                             for (String sockHostName : entry.getValue().keySet()) {
                                 for (File f : entry.getValue().get(sockHostName)) {
+                                    // Remove the file from the list of files to be sent to the client;
                                     clientFileListMap.get(sockHostName).remove(f.getName());
+                                    // Delete the file, if possible; and
                                     boolean flag = true;
                                     for (Queue<String> q : clientFileListMap.values()) {
                                         if (q.contains(f.getName())) {
@@ -195,17 +219,23 @@ public class ServerGUI {
                                         f.delete();
                                     }
                                 }
+                                // Remove the client from the set of clients that still need to be sent files
                                 synchronized (clientFileListMap) {
                                     clientFileListMap.remove(sockHostName);
                                 }
                             }
+                            // Also, the entry can be removed from threadMap
                             it.remove();
                         }
                     }
                     try {
+                        // Get the host name of the client from its socket
                         String hostName = getHostName(clientSocket);
+                        // The port number is unique to each client based on its position in the clientList
                         Socket sc = new Socket(hostName, 9600 + clientList.indexOf(new Person(null, hostName)) + 1);
+                        // Spawn a new thread for receiving files from the client
                         new MiniClient(sc, clientFileListMap, downloadsFolder);
+                        // To avoid memory- and network-hogging
                         Thread.sleep(4000);
                     } catch (IOException e) {
                         // Do nothing.
@@ -222,6 +252,11 @@ public class ServerGUI {
             ServerSocket serverSocket;
             Map<MiniServer, Map<String, Queue<File>>> threadMap;
 
+            /**
+             * @param serverSocket the socket through which the server transfers files to the client
+             * @param threadMap    map from a MiniServer instance to a map from the host name of client to the files
+             *                     transferred to it
+             */
             MiniServerHandler(ServerSocket serverSocket, Map<MiniServer, Map<String, Queue<File>>> threadMap) {
                 this.serverSocket = serverSocket;
                 this.threadMap = threadMap;
@@ -233,21 +268,31 @@ public class ServerGUI {
             public void run() {
                 try {
                     while (true) {
+                        // Accept the client connection
                         Socket sc = serverSocket.accept();
+                        // Get host name of the client
                         String hostName = getHostName(sc);
+                        // If there are files that need to be transferred...
                         if (clientFileListMap.containsKey(hostName)) {
+                            // List of files to be transferred to the client
                             List<File> tempFileList = new ArrayList<>();
+                            // The MiniServer instance created for this transfer
                             MiniServer ms;
+                            // See tempFileList
                             Queue<File> q = new LinkedList<>();
                             for (String filename : clientFileListMap.get(hostName)) {
                                 File f = new File(downloadsFolder + "/" + filename);
                                 tempFileList.add(f);
                                 q.add(f);
                             }
+                            // Spawn a new thread for transferring the files from the server to the client
                             Thread t = new Thread(ms = new MiniServer(sc, tempFileList, null, null));
                             t.start();
+                            // Create a map from the client hostname to the list of files that need to be transferred
                             Map<String, Queue<File>> fileMap = Collections.singletonMap(hostName, q);
+                            // Put an entry from the MiniServer instance to the map created above in threadMap
                             threadMap.put(ms, fileMap);
+                            // To avoid memory- and network-hogging
                             Thread.sleep(4000);
                         } else {
                             sc.close();
@@ -274,10 +319,17 @@ public class ServerGUI {
         return hostName;
     }
 
+    /**
+     * This class is responsible for passing the list of clients from the server to a requesting client.
+     */
     private class ListPasser implements Runnable {
         private BufferedReader brn;
         private PrintWriter pw;
 
+        /**
+         * @param brn used to read whether the client requires the list of clients to be sent
+         * @param pw  used to write the list of clients, if requested
+         */
         ListPasser(BufferedReader brn, PrintWriter pw) {
             this.brn = brn;
             this.pw = pw;
@@ -290,7 +342,9 @@ public class ServerGUI {
             try {
                 while (true) {
                     String s = brn.readLine();
+                    // If the client has requested the list...
                     if (s != null && s.startsWith("getlist")) {
+                        // Send the list ;)
                         pw.println("SIZE " + clientList.size());
                         for (Person client : clientList) {
                             pw.println(client.getName());
