@@ -266,11 +266,24 @@ public class ClientGUI {
         }
     }
 
+    /**
+     * The class responsible for reading the list of clients from the server and for reading files.
+     */
     private class Client implements Runnable {
         private String hostName;
+        /**
+         * Used to read the list of clients sent by the server.
+         */
         private BufferedReader brn;
+        /**
+         * Used to write a request to the server for the list of clients.
+         */
         private PrintWriter pw;
 
+        /**
+         * @param ip the host name of the server
+         * @throws IOException if one of the socket related operations fails
+         */
         public Client(String ip) throws IOException {
             Socket sock = new Socket(ip, 9000);
             hostName = ip;
@@ -284,14 +297,19 @@ public class ClientGUI {
         @Override
         public void run() {
             JOptionPane.showMessageDialog(rootPanel, "Connected to " + hostName);
+            // Spawn a new thread for reading the list of files
             new ListReader(brn);
             while (true) {
                 try {
+                    // Socket for accepting files from the server
                     Socket sc = new Socket(hostName, 9600);
+                    // Spawn a new thread for reading the files
                     new MiniClient(sc, null, downloadsFolder);
+                    // To avoid memory- and network-hogging
                     Thread.sleep(4000);
                 } catch (IOException e) {
                     JOptionPane.showMessageDialog(rootPanel, "Disconnected from " + hostName);
+                    // Nullify the client instance and clear the list of clients
                     cl = null;
                     clientList.clear();
                     tm.fireTableDataChanged();
@@ -303,9 +321,15 @@ public class ClientGUI {
         }
     }
 
+    /**
+     * This class is responsible for reading the list of clients from the server.
+     */
     private class ListReader implements Runnable {
         private BufferedReader brn;
 
+        /**
+         * @param brn used to read the list of clients sent by the server
+         */
         ListReader(BufferedReader brn) {
             this.brn = brn;
             Thread t = new Thread(this);
@@ -317,11 +341,15 @@ public class ClientGUI {
             try {
                 while (true) {
                     String s = brn.readLine();
+                    // If the server has sent the list of clients...
                     if (s != null && s.startsWith("SIZE")) {
+                        // Clear the current list;
                         clientList.clear();
+                        // Read the size of the list; and
                         StringTokenizer st = new StringTokenizer(s);
                         st.nextToken();
                         int size = Integer.parseInt(st.nextToken());
+                        // Read the list of clients ;)
                         for (int i = 0; i < size; i++) {
                             String clientName = brn.readLine();
                             String clientHostName = brn.readLine();
@@ -337,9 +365,16 @@ public class ClientGUI {
         }
     }
 
+    /**
+     * This class is used to connect to some servers automatically, if the client is not connected already and the
+     * server is online.
+     */
     private class AutoServerConnector implements Runnable {
         private List<String> hostNames;
 
+        /**
+         * @param hostNames list of host names of servers to which the client should connect automatically
+         */
         AutoServerConnector(List<String> hostNames) {
             this.hostNames = hostNames;
         }
@@ -347,8 +382,10 @@ public class ClientGUI {
         @Override
         public void run() {
             while (true) {
+                // If the client is not connected already...
                 if (cl == null) {
                     for (String hostName : hostNames) {
+                        // Connect to the server, if possible
                         try {
                             cl = new Client(hostName);
                             break;
@@ -358,6 +395,7 @@ public class ClientGUI {
                     }
                 }
                 try {
+                    // To avoid memory- and network-hogging
                     Thread.sleep(4000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
