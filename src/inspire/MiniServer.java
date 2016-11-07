@@ -1,6 +1,5 @@
 package inspire;
 
-import javax.swing.*;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -91,7 +90,7 @@ class MiniServer extends Observable implements Runnable {
                     FileInputStream fis = new FileInputStream(selectedFile);
                     // Size of the file
                     setChanged();
-                    notifyObservers(new String(String.valueOf(FILE_SEND_STARTED) + " " + selectedFile.getName()));
+                    notifyObservers(String.valueOf(FILE_SEND_STARTED) + " " + selectedFile.getName());
                     long size = selectedFile.length();
                     dos.writeInt(selectedFile.getName().length());
                     dos.writeChars(selectedFile.getName());
@@ -113,11 +112,15 @@ class MiniServer extends Observable implements Runnable {
                     }
                     fis.close();
                     setChanged();
-                    notifyObservers(new String(String.valueOf(FILE_SEND_FINISHED) + " " + selectedFile.getName()));
+                    notifyObservers(String.valueOf(FILE_SEND_FINISHED) + " " + selectedFile.getName());
+                    if (receivers == null) {
+                        // Server
+                        boolean delete = selectedFile.delete();
+                    }
                 }
                 if (receivers != null) {
                     // Client
-                    JOptionPane.showMessageDialog(null, "Transfer of " + selectedFiles + " completed");
+                    //JOptionPane.showMessageDialog(null, "Transfer of " + selectedFiles + " completed");
                 }
                 if (serverSocket != null) {
                     // Client
@@ -126,7 +129,7 @@ class MiniServer extends Observable implements Runnable {
                 dos.close();
                 sc.close();
                 setChanged();
-                notifyObservers(new String(String.valueOf(FILES_SENT) + " " + getHostName(sc)));
+                notifyObservers(String.valueOf(FILES_SENT) + " " + getHostName(sc));
             } catch (IOException e) {
                 // Do nothing.
             }

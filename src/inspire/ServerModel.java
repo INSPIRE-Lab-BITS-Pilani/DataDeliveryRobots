@@ -133,7 +133,7 @@ public class ServerModel extends Observable implements Runnable {
                                     notifyObservers(String.valueOf(ServerModel.FILE_RECEIVE_FINISHED) + " " + action.substring(2));
                                     break;
                                 case MiniClient.FILES_RECEIVED:
-                                    send(new HashSet<String>(receiverList), fileList);
+                                    send(new HashSet<>(receiverList), fileList);
                                     setChanged();
                                     notifyObservers(String.valueOf(ServerModel.FILES_RECEIVED) + " " + hostName);
                                     break;

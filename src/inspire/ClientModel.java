@@ -95,7 +95,7 @@ public class ClientModel extends Observable implements Runnable {
         try {
             ServerSocket serverSocket = new ServerSocket(9600 + clientList.indexOf(new Person(null, myHostName)) + 1);
             setChanged();
-            notifyObservers(new String(String.valueOf(TRANSFER_STARTED)));
+            notifyObservers(String.valueOf(TRANSFER_STARTED));
             Socket socket = serverSocket.accept();
             Thread miniServer = new Thread(new MiniServer(socket, selectedFiles, selectedPeople, serverSocket));
             miniServer.start();
@@ -112,7 +112,7 @@ public class ClientModel extends Observable implements Runnable {
     @Override
     public void run() {
         setChanged();
-        notifyObservers(new String(String.valueOf(CONNECTED) + " " + serverHostName));
+        notifyObservers(String.valueOf(CONNECTED) + " " + serverHostName);
         while (true) {
             try {
                 if (miniClientThread == null || !miniClientThread.isAlive()) {
@@ -126,11 +126,11 @@ public class ClientModel extends Observable implements Runnable {
                             switch (action.charAt(0)) {
                                 case MiniClient.FILE_RECEIVE_STARTED:
                                     setChanged();
-                                    notifyObservers(new String(String.valueOf(ClientModel.FILE_RECEIVE_STARTED) + " " + action.substring(2)));
+                                    notifyObservers(String.valueOf(ClientModel.FILE_RECEIVE_STARTED) + " " + action.substring(2));
                                     break;
                                 case MiniClient.FILE_RECEIVE_FINISHED:
                                     setChanged();
-                                    notifyObservers(new String(String.valueOf(ClientModel.FILE_RECEIVE_FINISHED) + " " + action.substring(2)));
+                                    notifyObservers(String.valueOf(ClientModel.FILE_RECEIVE_FINISHED) + " " + action.substring(2));
                                     break;
                                 case MiniClient.FILES_RECEIVED:
                                     setChanged();

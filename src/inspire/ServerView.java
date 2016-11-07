@@ -12,7 +12,7 @@ import java.util.*;
 public class ServerView extends Observable {
     public static final char START_SERVER = '0';
     public static final char DOWNLOADS_FOLDER = '1';
-    public static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("h:mm a");
+    private static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("h:mm a");
 
     private JPanel rootPanel;
     private JButton startServerButton;
@@ -39,11 +39,11 @@ public class ServerView extends Observable {
                 int result = fileChooser.showOpenDialog(rootPanel);
                 if (result == JFileChooser.APPROVE_OPTION) {
                     setChanged();
-                    notifyObservers(new String(String.valueOf(DOWNLOADS_FOLDER) + " " + fileChooser.getSelectedFile().getAbsolutePath()));
+                    notifyObservers(String.valueOf(DOWNLOADS_FOLDER) + " " + fileChooser.getSelectedFile().getAbsolutePath());
                 }
             }
         });
-        connectedTable.setModel(new CustomTableModel(new ArrayList<Person>()));
+        connectedTable.setModel(new CustomTableModel(new ArrayList<>()));
         statusBar.setText("");
         JFrame frame = new JFrame("Server");
         frame.setContentPane(rootPanel);
@@ -104,7 +104,7 @@ public class ServerView extends Observable {
 
     public void setStatus(String status) {
         statusBar.setText(status);
-        logHistory.append(simpleDateFormat.format(new Date()).toString() + "   " + status + "\n");
+        logHistory.append(simpleDateFormat.format(new Date()) + "   " + status + "\n");
     }
 
     public void setServerModel(ServerModel serverModel) {

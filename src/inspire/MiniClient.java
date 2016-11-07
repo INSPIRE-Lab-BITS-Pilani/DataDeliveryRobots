@@ -67,7 +67,7 @@ class MiniClient extends Observable implements Runnable {
                 // The actual file name
                 String actualFileName = sb.toString();
                 setChanged();
-                notifyObservers(new String(String.valueOf(FILE_RECEIVE_STARTED) + " " + actualFileName));
+                notifyObservers(String.valueOf(FILE_RECEIVE_STARTED) + " " + actualFileName);
                 // Size of the file
                 long size = dataInputStream.readLong();
                 // Buffer to store part of the file
@@ -87,7 +87,7 @@ class MiniClient extends Observable implements Runnable {
                 }
                 fos.close();
                 setChanged();
-                notifyObservers(new String(String.valueOf(FILE_RECEIVE_FINISHED) + " " + actualFileName));
+                notifyObservers(String.valueOf(FILE_RECEIVE_FINISHED) + " " + actualFileName);
             }
             if (receiverList == null) {
                 // Client
