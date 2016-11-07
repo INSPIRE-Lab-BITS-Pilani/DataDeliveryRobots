@@ -85,11 +85,6 @@ public class ServerModel extends Observable implements Runnable {
             ServerSocket serverSocket;
             Map<MiniServer, Map<String, Queue<File>>> threadMap;
 
-            /**
-             * @param serverSocket the socket through which the server transfers files to the client
-             * @param threadMap    map from a MiniServer instance to a map from the host name of client to the files
-             *                     transferred to it
-             */
             MiniServerHandler(ServerSocket serverSocket, Map<MiniServer, Map<String, Queue<File>>> threadMap) {
                 this.serverSocket = serverSocket;
                 this.threadMap = threadMap;
