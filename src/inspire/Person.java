@@ -22,14 +22,14 @@ class Person {
     /**
      * @return human-readable identifier for the client
      */
-    String getName() {
+    public String getName() {
         return name;
     }
 
     /**
      * @return the client's host name
      */
-    String getHostName() {
+    public String getHostName() {
         return hostName;
     }
 

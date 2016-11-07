@@ -58,8 +58,7 @@ public class ServerGUI {
                         Scanner sc = new Scanner(f);
                         clientListFile = new File(sc.nextLine());
                         sc.close();
-                        result = JOptionPane.showConfirmDialog(null, "Use " + clientListFile + " as the client list" +
-                                " file?");
+                        result = JOptionPane.showConfirmDialog(null, "Use " + clientListFile + " as the client list file?");
                         if (result == JOptionPane.YES_OPTION) {
                             ServerGUI.this.populateClientList(clientListFile);
                             new Server();
@@ -234,7 +233,7 @@ public class ServerGUI {
                         // The port number is unique to each client based on its position in the clientList
                         Socket sc = new Socket(hostName, 9600 + clientList.indexOf(new Person(null, hostName)) + 1);
                         // Spawn a new thread for receiving files from the client
-                        new MiniClient(sc, clientFileListMap, downloadsFolder);
+                        new Thread(new MiniClient(sc, clientFileListMap, downloadsFolder)).start();
                         // To avoid memory- and network-hogging
                         Thread.sleep(4000);
                     } catch (IOException e) {

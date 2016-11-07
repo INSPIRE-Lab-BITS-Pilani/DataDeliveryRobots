@@ -14,15 +14,15 @@ import java.util.List;
  * the Server and Client classes.
  */
 class MiniServer implements Runnable {
-    private Socket sc;
-    private List<File> selectedFiles;
-    private List<Person> receivers;
-    private ServerSocket serverSocket;
     /**
      * The thread created from this {@code MiniServer} instance. It is used in the Server class (once the thread
      * terminates, the corresponding files can be removed from the {@code clientFileListMap} and deleted if possible).
      */
     Thread reqHandlerThread;
+    private Socket sc;
+    private List<File> selectedFiles;
+    private List<Person> receivers;
+    private ServerSocket serverSocket;
 
     /**
      * @param sc            the socket to which the files to be sent should be written
@@ -31,7 +31,7 @@ class MiniServer implements Runnable {
      * @param serverSocket  the server socket created for sending (in the Client case, this should be closed after
      *                      file transfer is complete)
      */
-    MiniServer(Socket sc, List<File> selectedFiles, List<Person> receivers, ServerSocket serverSocket) {
+    public MiniServer(Socket sc, List<File> selectedFiles, List<Person> receivers, ServerSocket serverSocket) {
         this.sc = sc;
         this.selectedFiles = selectedFiles;
         this.receivers = receivers;
