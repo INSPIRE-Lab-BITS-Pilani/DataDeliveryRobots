@@ -4,11 +4,8 @@ import java.io.DataInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 import java.util.Observable;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * The "actual" client class; it is responsible for receiving files sent by the MiniServer instances. It is utilized by
@@ -20,16 +17,16 @@ class MiniClient extends Observable implements Runnable {
     public static final char FILES_RECEIVED = '2';
 
     private DataInputStream dataInputStream;
-    private Map<String, Queue<String>> clientFileListMap;
+    private List<String> receiverList;
     private String downloadsFolder;
 
     /**
      * @param socket            the socket from which the received files should be read
-     * @param clientFileListMap map from client host names to the names of files that need to be transferred to them
+     * @param receiverList map from client host names to the names of files that need to be transferred to them
      * @param downloadsFolder   the folder in which the received files should be stored
      */
-    public MiniClient(Socket socket, Map<String, Queue<String>> clientFileListMap, String downloadsFolder) {
-        this.clientFileListMap = clientFileListMap;
+    public MiniClient(Socket socket, List<String> receiverList, String downloadsFolder) {
+        this.receiverList = receiverList;
         this.downloadsFolder = downloadsFolder;
         try {
             dataInputStream = new DataInputStream(socket.getInputStream());
@@ -45,8 +42,7 @@ class MiniClient extends Observable implements Runnable {
             int receiverSize = dataInputStream.readInt();
             StringBuilder sb;
             // Map from client host names to the file names that need to be sent to them (applicable to Server only)
-            Map<String, Queue<String>> receiverFileList = new HashMap<>();
-            if (clientFileListMap != null && receiverSize != 0) {
+            if (receiverList != null && receiverSize != 0) {
                 for (int i = 0; i < receiverSize; i++) {
                     // Length of the receiver client host name
                     int receiverNameLen = dataInputStream.readInt();
@@ -56,8 +52,7 @@ class MiniClient extends Observable implements Runnable {
                     }
                     // The actual client name
                     String receiverName = sb.toString();
-                    receiverFileList.put(receiverName, clientFileListMap.containsKey(receiverName)
-                            ? clientFileListMap.get(receiverName) : new ConcurrentLinkedQueue<String>());
+                    receiverList.add(receiverName);
                 }
             }
             // Number of files to receive
@@ -73,11 +68,6 @@ class MiniClient extends Observable implements Runnable {
                 String actualFileName = sb.toString();
                 setChanged();
                 notifyObservers(new String(String.valueOf(FILE_RECEIVE_STARTED) + " " + actualFileName));
-                if (clientFileListMap != null && receiverSize != 0) {
-                    for (Queue<String> fileList : receiverFileList.values()) {
-                        fileList.add(actualFileName);
-                    }
-                }
                 // Size of the file
                 long size = dataInputStream.readLong();
                 // Buffer to store part of the file
@@ -99,11 +89,10 @@ class MiniClient extends Observable implements Runnable {
                 setChanged();
                 notifyObservers(new String(String.valueOf(FILE_RECEIVE_FINISHED) + " " + actualFileName));
             }
-            if (clientFileListMap == null) {
+            if (receiverList == null) {
                 // Client
             } else {
                 // Server
-                clientFileListMap.putAll(receiverFileList);
             }
             dataInputStream.close();
             setChanged();

@@ -115,8 +115,14 @@ public class ServerView extends Observable {
             public void update(Observable observable, Object o) {
                 String action = (String) o;
                 switch (action.charAt(0)) {
-                    case ClientModel.LIST_CHANGED:
+                    case ServerModel.FILE_RECEIVE_STARTED:
+                        setStatus("Receiving " + action.substring(2));
                         break;
+                    case ServerModel.FILE_RECEIVE_FINISHED:
+                        setStatus("Received " + action.substring(2));
+                        break;
+                    case ServerModel.FILES_RECEIVED:
+                        setStatus("All files received from " + action.substring(2));
                 }
             }
         });

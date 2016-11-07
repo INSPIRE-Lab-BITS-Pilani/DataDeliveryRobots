@@ -5,15 +5,21 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.List;
+import java.util.Observable;
 
 /**
  * The "actual" server class; it is responsible for sending files to the MiniClient instances. It is utilized by both
  * the Server and Client classes.
  */
-class MiniServer implements Runnable {
+class MiniServer extends Observable implements Runnable {
+    public static final char FILE_SEND_STARTED = '0';
+    public static final char FILE_SEND_FINISHED = '1';
+    public static final char FILES_SENT = '2';
     /**
      * The thread created from this {@code MiniServer} instance. It is used in the Server class (once the thread
      * terminates, the corresponding files can be removed from the {@code clientFileListMap} and deleted if possible).
@@ -21,7 +27,7 @@ class MiniServer implements Runnable {
     Thread reqHandlerThread;
     private Socket sc;
     private List<File> selectedFiles;
-    private List<Person> receivers;
+    private List<String> receivers;
     private ServerSocket serverSocket;
 
     /**
@@ -31,7 +37,7 @@ class MiniServer implements Runnable {
      * @param serverSocket  the server socket created for sending (in the Client case, this should be closed after
      *                      file transfer is complete)
      */
-    public MiniServer(Socket sc, List<File> selectedFiles, List<Person> receivers, ServerSocket serverSocket) {
+    public MiniServer(Socket sc, List<File> selectedFiles, List<String> receivers, ServerSocket serverSocket) {
         this.sc = sc;
         this.selectedFiles = selectedFiles;
         this.receivers = receivers;
@@ -56,15 +62,22 @@ class MiniServer implements Runnable {
             }
         }
 
+        private String getHostName(Socket sc) throws UnknownHostException {
+            String hostName = sc.getInetAddress().getHostName();
+            if (hostName.equals("localhost")) {
+                hostName = InetAddress.getLocalHost().getHostName();
+            }
+            return hostName;
+        }
+
         @Override
         public void run() {
             try {
                 if (receivers != null) {
                     // Client
                     dos.writeInt(receivers.size());
-                    for (Person receiver : receivers) {
+                    for (String receiverHostName : receivers) {
                         // Host name of the receiver
-                        String receiverHostName = receiver.getHostName();
                         dos.writeInt(receiverHostName.length());
                         dos.writeChars(receiverHostName);
                     }
@@ -77,6 +90,8 @@ class MiniServer implements Runnable {
                     // Stream to read the file
                     FileInputStream fis = new FileInputStream(selectedFile);
                     // Size of the file
+                    setChanged();
+                    notifyObservers(new String(String.valueOf(FILE_SEND_STARTED) + " " + selectedFile.getName()));
                     long size = selectedFile.length();
                     dos.writeInt(selectedFile.getName().length());
                     dos.writeChars(selectedFile.getName());
@@ -97,6 +112,8 @@ class MiniServer implements Runnable {
                         }
                     }
                     fis.close();
+                    setChanged();
+                    notifyObservers(new String(String.valueOf(FILE_SEND_FINISHED) + " " + selectedFile.getName()));
                 }
                 if (receivers != null) {
                     // Client
@@ -108,6 +125,8 @@ class MiniServer implements Runnable {
                 }
                 dos.close();
                 sc.close();
+                setChanged();
+                notifyObservers(new String(String.valueOf(FILES_SENT) + " " + getHostName(sc)));
             } catch (IOException e) {
                 // Do nothing.
             }

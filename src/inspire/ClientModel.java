@@ -88,18 +88,18 @@ public class ClientModel extends Observable implements Runnable {
     }
 
     public void send(List<File> selectedFiles, int[] selectedPeopleIndices) {
-        List<Person> selectedPeople = new ArrayList<>();
+        List<String> selectedPeople = new ArrayList<>();
         for (int i : selectedPeopleIndices) {
-            selectedPeople.add(clientList.get(i));
+            selectedPeople.add(clientList.get(i).getHostName());
         }
         try {
             ServerSocket serverSocket = new ServerSocket(9600 + clientList.indexOf(new Person(null, myHostName)) + 1);
+            setChanged();
+            notifyObservers(new String(String.valueOf(TRANSFER_STARTED)));
             Socket socket = serverSocket.accept();
             Thread miniServer = new Thread(new MiniServer(socket, selectedFiles, selectedPeople, serverSocket));
             miniServer.start();
             miniServerThreads.add(miniServer);
-            setChanged();
-            notifyObservers(new String(String.valueOf(TRANSFER_STARTED)));
         } catch (IOException e) {
             e.printStackTrace();
         }

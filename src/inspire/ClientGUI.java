@@ -174,7 +174,7 @@ public class ClientGUI {
                                         mHostName)) + 1);
                                 JOptionPane.showMessageDialog(null, "Transfer of selected files started");
                                 Socket sc = sersock.accept();
-                                new Thread(new MiniServer(sc, selectedFiles, selectedPeople, sersock)).start();
+                                //new Thread(new MiniServer(sc, selectedFiles, selectedPeople, sersock)).start();
                                 selectedFiles = new ArrayList<>();
                                 fileList.setModel(new DefaultListModel());
                             } catch (IOException e1) {

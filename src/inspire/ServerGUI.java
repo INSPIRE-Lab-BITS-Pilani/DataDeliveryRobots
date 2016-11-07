@@ -15,11 +15,14 @@ import java.util.concurrent.ConcurrentHashMap;
  * The top-level server class including GUI elements.
  */
 public class ServerGUI {
+    /**
+     * Map from client host names to the names of files that need to be transferred to them.
+     */
+    private final Map<String, Queue<String>> clientFileListMap;
     private JPanel rootPanel;
     private JButton startServerButton;
     private JButton downloadsFolderButton;
     private JTable connectedTable;
-
     /**
      * The list of clients.
      */
@@ -32,10 +35,6 @@ public class ServerGUI {
      * The folder in which the received files should be stored.
      */
     private String downloadsFolder;
-    /**
-     * Map from client host names to the names of files that need to be transferred to them.
-     */
-    private final Map<String, Queue<String>> clientFileListMap;
 
     private ServerGUI() {
         clientList = new ArrayList<>();
@@ -102,6 +101,17 @@ public class ServerGUI {
     }
 
     /**
+     * @param args the program arguments (ignored)
+     */
+    public static void main(String[] args) {
+        JFrame frame = new JFrame("ServerGUI");
+        frame.setContentPane(new ServerGUI().rootPanel);
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        frame.pack();
+        frame.setVisible(true);
+    }
+
+    /**
      * @param clientListFile file containing the list of clients (each line in the file represents a unique client, with
      *                       a human-readable identifier and the host name separated by spaces)
      * @throws FileNotFoundException if {@code clientListFile} is not found
@@ -118,14 +128,17 @@ public class ServerGUI {
     }
 
     /**
-     * @param args the program arguments (ignored)
+     * @param sc the socket bound to the machine whose host name should be returned
+     * @return the actual host name of the machine to which the socket is bound (localhost is replaced by the canonical
+     * host name of the machine)
+     * @throws UnknownHostException if {@link InetAddress#getLocalHost()} fails
      */
-    public static void main(String[] args) {
-        JFrame frame = new JFrame("ServerGUI");
-        frame.setContentPane(new ServerGUI().rootPanel);
-        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        frame.pack();
-        frame.setVisible(true);
+    private String getHostName(Socket sc) throws UnknownHostException {
+        String hostName = sc.getInetAddress().getHostName();
+        if (hostName.equals("localhost")) {
+            hostName = InetAddress.getLocalHost().getHostName();
+        }
+        return hostName;
     }
 
     /**
@@ -233,7 +246,7 @@ public class ServerGUI {
                         // The port number is unique to each client based on its position in the clientList
                         Socket sc = new Socket(hostName, 9600 + clientList.indexOf(new Person(null, hostName)) + 1);
                         // Spawn a new thread for receiving files from the client
-                        new Thread(new MiniClient(sc, clientFileListMap, downloadsFolder)).start();
+                        //new Thread(new MiniClient(sc, clientFileListMap, downloadsFolder)).start();
                         // To avoid memory- and network-hogging
                         Thread.sleep(4000);
                     } catch (IOException e) {
@@ -302,20 +315,6 @@ public class ServerGUI {
                 }
             }
         }
-    }
-
-    /**
-     * @param sc the socket bound to the machine whose host name should be returned
-     * @return the actual host name of the machine to which the socket is bound (localhost is replaced by the canonical
-     * host name of the machine)
-     * @throws UnknownHostException if {@link InetAddress#getLocalHost()} fails
-     */
-    private String getHostName(Socket sc) throws UnknownHostException {
-        String hostName = sc.getInetAddress().getHostName();
-        if (hostName.equals("localhost")) {
-            hostName = InetAddress.getLocalHost().getHostName();
-        }
-        return hostName;
     }
 
     /**
