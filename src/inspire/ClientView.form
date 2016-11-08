@@ -74,6 +74,7 @@
               <component id="97dde" class="javax.swing.JTextArea" binding="logHistory">
                 <constraints/>
                 <properties>
+                  <lineWrap value="true"/>
                   <text value=""/>
                 </properties>
               </component>

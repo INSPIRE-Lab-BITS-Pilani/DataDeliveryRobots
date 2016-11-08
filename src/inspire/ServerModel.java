@@ -11,6 +11,9 @@ public class ServerModel extends Observable implements Runnable {
     public static final char FILE_RECEIVE_STARTED = '0';
     public static final char FILE_RECEIVE_FINISHED = '1';
     public static final char FILES_RECEIVED = '2';
+    public static final char FILE_SEND_STARTED = '3';
+    public static final char FILE_SEND_FINISHED = '4';
+    public static final char FILES_SENT = '5';
 
     private List<Person> clientList;
     private String downloadsFolder;
@@ -88,11 +91,17 @@ public class ServerModel extends Observable implements Runnable {
                                         String action = (String) o;
                                         switch (action.charAt(0)) {
                                             case MiniServer.FILE_SEND_STARTED:
+                                                setChanged();
+                                                notifyObservers(String.valueOf(ServerModel.FILE_SEND_STARTED) + " " + action.substring(2));
                                                 break;
                                             case MiniServer.FILE_SEND_FINISHED:
+                                                setChanged();
+                                                notifyObservers(String.valueOf(ServerModel.FILE_SEND_FINISHED) + " " + action.substring(2));
                                                 break;
                                             case MiniServer.FILES_SENT:
                                                 receiverList.remove(action.substring(2));
+                                                setChanged();
+                                                notifyObservers(String.valueOf(ServerModel.FILES_SENT) + " " + action.substring(2));
                                                 break;
                                         }
                                     }

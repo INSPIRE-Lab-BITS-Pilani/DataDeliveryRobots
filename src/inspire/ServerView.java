@@ -123,6 +123,16 @@ public class ServerView extends Observable {
                         break;
                     case ServerModel.FILES_RECEIVED:
                         setStatus("All files received from " + action.substring(2));
+                        break;
+                    case ServerModel.FILE_SEND_STARTED:
+                        setStatus("Transferring " + action.substring(2));
+                        break;
+                    case ServerModel.FILE_SEND_FINISHED:
+                        setStatus("Transferred " + action.substring(2));
+                        break;
+                    case ServerModel.FILES_SENT:
+                        setStatus("Transfer to " + action.substring(2) + " complete!!");
+                        break;
                 }
             }
         });
