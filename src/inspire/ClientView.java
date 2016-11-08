@@ -70,7 +70,7 @@ public class ClientView extends Observable {
                 int result = fileChooser.showOpenDialog(rootPanel);
                 if (result == JFileChooser.APPROVE_OPTION) {
                     setChanged();
-                    notifyObservers(new String(String.valueOf(DOWNLOADS_FOLDER) + " " + fileChooser.getSelectedFile().getAbsolutePath()));
+                    notifyObservers(String.valueOf(DOWNLOADS_FOLDER) + " " + fileChooser.getSelectedFile().getAbsolutePath());
                 }
             }
         });
@@ -193,7 +193,7 @@ public class ClientView extends Observable {
 
     public void setStatus(String status) {
         statusBar.setText(status);
-        logHistory.append(simpleDateFormat.format(new Date()).toString() + "   " + status + "\n");
+        logHistory.append(simpleDateFormat.format(new Date()) + "   " + status + "\n");
     }
 
     public void listChanged() {
