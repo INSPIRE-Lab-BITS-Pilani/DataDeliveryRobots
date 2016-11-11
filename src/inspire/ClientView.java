@@ -168,7 +168,7 @@ public class ClientView extends Observable {
         return autoServerNameList;
     }
 
-    public String getServerHostName(String serverHostNameFile) {
+    public static String getServerHostName(String serverHostNameFile) {
         File file = new File(serverHostNameFile);
         String serverHostName = "";
         int result = JOptionPane.NO_OPTION;
