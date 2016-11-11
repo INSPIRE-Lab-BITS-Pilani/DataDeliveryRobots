@@ -16,6 +16,10 @@ public class ClientModel extends Observable implements Runnable {
     public static final char FILE_RECEIVE_STARTED = '4';
     public static final char FILE_RECEIVE_FINISHED = '5';
     public static final char FILES_RECEIVED = '6';
+    public static final char FILE_SEND_STARTED = '7';
+    public static final char FILE_SEND_FINISHED = '8';
+    public static final char FILES_SENT = '9';
+
 
     private List<Person> clientList;
     private String downloadsFolder;
@@ -97,9 +101,30 @@ public class ClientModel extends Observable implements Runnable {
             setChanged();
             notifyObservers(String.valueOf(TRANSFER_STARTED));
             Socket socket = serverSocket.accept();
-            Thread miniServer = new Thread(new MiniServer(socket, selectedFiles, selectedPeople, serverSocket));
-            miniServer.start();
-            miniServerThreads.add(miniServer);
+            MiniServer miniServer = new MiniServer(socket, selectedFiles, selectedPeople, serverSocket);
+            Thread miniServerThread = new Thread(miniServer);
+            miniServer.addObserver(new Observer() {
+                @Override
+                public void update(Observable observable, Object o) {
+                    String action = (String) o;
+                    switch (action.charAt(0)) {
+                        case MiniServer.FILE_SEND_STARTED:
+                            setChanged();
+                            notifyObservers(String.valueOf(FILE_SEND_STARTED) + " " + action.substring(2));
+                            break;
+                        case MiniServer.FILE_SEND_FINISHED:
+                            setChanged();
+                            notifyObservers(String.valueOf(FILE_SEND_FINISHED) + " " + action.substring(2));
+                            break;
+                        case MiniServer.FILES_SENT:
+                            setChanged();
+                            notifyObservers(String.valueOf(FILES_SENT) + " " + action.substring(2));
+                            break;
+                    }
+                }
+            });
+            miniServerThread.start();
+            miniServerThreads.add(miniServerThread);
         } catch (IOException e) {
             e.printStackTrace();
         }

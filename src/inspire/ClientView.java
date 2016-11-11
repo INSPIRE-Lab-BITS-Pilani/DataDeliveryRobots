@@ -3,6 +3,8 @@ package inspire;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
@@ -28,7 +30,6 @@ public class ClientView extends Observable {
     private JButton deleteFilesButton;
     private JLabel statusBar;
     private JTextArea logHistory;
-    private CustomTableModel customTableModel;
     private ClientModel clientModel;
 
     public ClientView() {
@@ -103,45 +104,21 @@ public class ClientView extends Observable {
                 }
             }
         });
-        customTableModel = new CustomTableModel(new ArrayList<>());
-        clientListTable.setModel(customTableModel);
+        clientListTable.setModel(new CustomTableModel(new ArrayList<>()));
         clientModel = null;
         fileList.setModel(new DefaultListModel());
         statusBar.setText("");
         JFrame frame = new JFrame("Client");
+        frame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent windowEvent) {
+                super.windowClosing(windowEvent);
+            }
+        });
         frame.setContentPane(rootPanel);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
-    }
-
-    public static String getServerHostName(String serverHostNameFile) {
-        File file = new File(serverHostNameFile);
-        String serverHostName = "";
-        int result = JOptionPane.NO_OPTION;
-        if (file.exists()) {
-            try {
-                Scanner sc = new Scanner(file);
-                serverHostName = sc.nextLine();
-                sc.close();
-                result = JOptionPane.showConfirmDialog(null, "Use " + serverHostName + " as the server host name?");
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-        }
-        if (!file.exists() || result != JOptionPane.YES_OPTION) {
-            serverHostName = JOptionPane.showInputDialog("Enter the host name of the server");
-            if (serverHostName != null) {
-                try {
-                    PrintStream ps = new PrintStream(file);
-                    ps.println(serverHostName);
-                    ps.close();
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        return serverHostName;
     }
 
     public static List<String> getAutoServerList(String autoServerListFile) {
@@ -191,14 +168,64 @@ public class ClientView extends Observable {
         return autoServerNameList;
     }
 
+    public String getServerHostName(String serverHostNameFile) {
+        File file = new File(serverHostNameFile);
+        String serverHostName = "";
+        int result = JOptionPane.NO_OPTION;
+        if (file.exists()) {
+            try {
+                Scanner sc = new Scanner(file);
+                serverHostName = sc.nextLine();
+                sc.close();
+                result = JOptionPane.showConfirmDialog(null, "Use " + serverHostName + " as the server host name?");
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+        if (!file.exists() || result != JOptionPane.YES_OPTION) {
+            serverHostName = JOptionPane.showInputDialog("Enter the host name of the server");
+            if (serverHostName != null) {
+                try {
+                    PrintStream ps = new PrintStream(file);
+                    ps.println(serverHostName);
+                    ps.close();
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return serverHostName;
+    }
+
     public void setStatus(String status) {
         statusBar.setText(status);
         logHistory.append(simpleDateFormat.format(new Date()) + "   " + status + "\n");
     }
 
     public void listChanged() {
-        customTableModel = new CustomTableModel(clientModel.getClientList());
-        clientListTable.setModel(customTableModel);
+        clientListTable.setModel(new CustomTableModel(clientModel.getClientList()));
+    }
+
+    public int[] getSelectedPeopleIndices() {
+        return clientListTable.getSelectedRows();
+    }
+
+    public List<File> getSelectedFiles() {
+        List<File> selectedFiles = new ArrayList<>();
+        ListModel listModel = fileList.getModel();
+        int size = listModel.getSize();
+        for (int i = 0; i < size; i++) {
+            selectedFiles.add(new File((String) listModel.getElementAt(i)));
+        }
+        return selectedFiles;
+    }
+
+    public JPanel getRootPanel() {
+        return rootPanel;
+    }
+
+    public void showMessage(String message) {
+        JOptionPane.showMessageDialog(rootPanel, message);
     }
 
     public void setClientModel(ClientModel clientModel) {
@@ -236,30 +263,17 @@ public class ClientView extends Observable {
                     case ClientModel.FILES_RECEIVED:
                         setStatus("Files received successfully!!");
                         break;
+                    case ClientModel.FILE_SEND_STARTED:
+                        setStatus("Transferring " + action.substring(2));
+                        break;
+                    case ClientModel.FILE_SEND_FINISHED:
+                        setStatus("Transferred " + action.substring(2));
+                        break;
+                    case ClientModel.FILES_SENT:
+                        setStatus("Files transferred successfully!!");
+                        break;
                 }
             }
         });
-    }
-
-    public int[] getSelectedPeopleIndices() {
-        return clientListTable.getSelectedRows();
-    }
-
-    public List<File> getSelectedFiles() {
-        List<File> selectedFiles = new ArrayList<>();
-        ListModel listModel = fileList.getModel();
-        int size = listModel.getSize();
-        for (int i = 0; i < size; i++) {
-            selectedFiles.add(new File((String) listModel.getElementAt(i)));
-        }
-        return selectedFiles;
-    }
-
-    public JPanel getRootPanel() {
-        return rootPanel;
-    }
-
-    public void showMessage(String message) {
-        JOptionPane.showMessageDialog(rootPanel, message);
     }
 }
