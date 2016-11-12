@@ -5,10 +5,10 @@ import java.util.Observable;
 import java.util.Observer;
 
 public class ServerController {
-    private ServerModel serverModel;
-    private ServerView serverView;
+    private static ServerModel serverModel;
+    private static ServerView serverView;
 
-    public ServerController() {
+    public static void main(String[] args) {
         serverView = new ServerView();
         serverView.addObserver(new Observer() {
             @Override
@@ -26,18 +26,14 @@ public class ServerController {
         });
     }
 
-    public static void main(String[] args) {
-        new ServerController();
-    }
-
-    public void startServer() {
+    public static void startServer() {
         if (serverModel == null) {
-            List<Person> clientList = serverView.getClientList(System.getProperty("java.io.tmpdir") + "/" + "__ClientListFile__.txt");
-            try {
-                serverModel = new ServerModel(clientList);
+            List<Person> clientList = serverView.getClientList(
+                    System.getProperty("java.io.tmpdir") + "/" + "__ClientListFile__.txt"
+            );
+            if (clientList.size() > 0) {
+                serverModel = new ServerModel(clientList, System.getProperty("java.io.tmpdir"));
                 serverView.setServerModel(serverModel);
-            } catch (Exception e) {
-                e.printStackTrace();
             }
         } else {
             serverView.showMessage("Server is already running!!");

@@ -1,6 +1,5 @@
 package inspire;
 
-import javax.swing.*;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -9,47 +8,43 @@ import java.net.UnknownHostException;
 import java.util.*;
 
 public class ClientModel extends Observable implements Runnable {
+    public static final int controlPort = 9000;
+    public static final int dataPort = 9600;
     public static final char LIST_CHANGED = '0';
-    public static final char CONNECTED = '1';
-    public static final char DISCONNECTED = '2';
-    public static final char TRANSFER_STARTED = '3';
-    public static final char FILE_RECEIVE_STARTED = '4';
-    public static final char FILE_RECEIVE_FINISHED = '5';
-    public static final char FILES_RECEIVED = '6';
-    public static final char FILE_SEND_STARTED = '7';
-    public static final char FILE_SEND_FINISHED = '8';
-    public static final char FILES_SENT = '9';
-
+    public static final char DISCONNECTED = '1';
+    public static final char TRANSFER_STARTED = '2';
+    public static final char FILE_RECEIVE_STARTED = '3';
+    public static final char FILE_RECEIVE_FINISHED = '4';
+    public static final char FILES_RECEIVED = '5';
+    public static final char FILE_SEND_STARTED = '6';
+    public static final char FILE_SEND_FINISHED = '7';
+    public static final char FILES_SENT = '8';
 
     private List<Person> clientList;
     private String downloadsFolder;
     private String myHostName;
     private String serverHostName;
-    private BufferedReader bufferedReader;
-    private PrintWriter printWriter;
-    private Thread clientThread;
-    private Thread listReaderThread;
-    private List<Thread> miniServerThreads;
     private Thread miniClientThread;
+    private PrintWriter printWriter;
+    private BufferedReader bufferedReader;
 
-    public ClientModel(String serverHostName) throws Exception {
-        this.miniClientThread = null;
-        this.miniServerThreads = new ArrayList<>();
-        this.clientList = new ArrayList<>();
-        this.downloadsFolder = System.getProperty("user.home") + "/Downloads";
+    public ClientModel(String serverHostName) throws IOException {
         try {
+            this.clientList = new ArrayList<>();
+            this.downloadsFolder = System.getProperty("user.home") + "/Downloads";
             this.myHostName = InetAddress.getLocalHost().getHostName();
+            this.serverHostName = serverHostName;
+            this.miniClientThread = null;
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
-        this.serverHostName = serverHostName;
 
-        Socket socket = new Socket(serverHostName, 9000);
+        Socket socket = new Socket(serverHostName, controlPort);
         bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         printWriter = new PrintWriter(socket.getOutputStream());
-        clientThread = new Thread(this);
+        Thread clientThread = new Thread(this);
         clientThread.start();
-        listReaderThread = new Thread(new Runnable() {
+        Thread listReaderThread = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -70,7 +65,6 @@ public class ClientModel extends Observable implements Runnable {
                         }
                     }
                 } catch (IOException e) {
-                    JOptionPane.showMessageDialog(null, "Main Server is not running");
                     e.printStackTrace();
                 }
             }
@@ -78,12 +72,16 @@ public class ClientModel extends Observable implements Runnable {
         listReaderThread.start();
     }
 
+    public List<Person> getClientList() {
+        return clientList;
+    }
+
     public String getServerHostName() {
         return serverHostName;
     }
 
-    public List<Person> getClientList() {
-        return clientList;
+    public void setDownloadsFolder(String downloadsFolder) {
+        this.downloadsFolder = downloadsFolder;
     }
 
     public void getList() {
@@ -91,17 +89,17 @@ public class ClientModel extends Observable implements Runnable {
         printWriter.flush();
     }
 
-    public void send(List<File> selectedFiles, int[] selectedPeopleIndices) {
-        List<String> selectedPeople = new ArrayList<>();
-        for (int i : selectedPeopleIndices) {
-            selectedPeople.add(clientList.get(i).getHostName());
-        }
+    public void send(List<File> fileList, int[] receiverIndices) {
         try {
-            ServerSocket serverSocket = new ServerSocket(9600 + clientList.indexOf(new Person(null, myHostName)) + 1);
+            List<String> receiverList = new ArrayList<>();
+            for (int i : receiverIndices) {
+                receiverList.add(clientList.get(i).getHostName());
+            }
+            ServerSocket serverSocket = new ServerSocket(dataPort + clientList.indexOf(new Person(null, myHostName)) + 1);
+            Socket socket = serverSocket.accept();
             setChanged();
             notifyObservers(String.valueOf(TRANSFER_STARTED));
-            Socket socket = serverSocket.accept();
-            MiniServer miniServer = new MiniServer(socket, selectedFiles, selectedPeople, serverSocket);
+            MiniServer miniServer = new MiniServer(socket, fileList, receiverList, serverSocket, false);
             Thread miniServerThread = new Thread(miniServer);
             miniServer.addObserver(new Observer() {
                 @Override
@@ -124,25 +122,18 @@ public class ClientModel extends Observable implements Runnable {
                 }
             });
             miniServerThread.start();
-            miniServerThreads.add(miniServerThread);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void setDownloadsFolder(String downloadsFolder) {
-        this.downloadsFolder = downloadsFolder;
-    }
-
     @Override
     public void run() {
-        setChanged();
-        notifyObservers(String.valueOf(CONNECTED) + " " + serverHostName);
         while (true) {
             try {
                 if (miniClientThread == null || !miniClientThread.isAlive()) {
-                    Socket socket = new Socket(serverHostName, 9600);
-                    MiniClient miniClient = new MiniClient(socket, null, downloadsFolder);
+                    Socket socket = new Socket(serverHostName, dataPort);
+                    MiniClient miniClient = new MiniClient(socket, downloadsFolder);
                     miniClientThread = new Thread(miniClient);
                     miniClient.addObserver(new Observer() {
                         @Override

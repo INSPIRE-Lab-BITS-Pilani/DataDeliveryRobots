@@ -57,17 +57,17 @@ public class ServerView extends Observable {
         List<Person> clientList = new ArrayList<>();
         int result = JOptionPane.NO_OPTION;
         if (file.exists()) {
-            result = JOptionPane.showConfirmDialog(null, "Use " + clientListFile + " as the client list file?");
+            result = JOptionPane.showConfirmDialog(null, "Use '" + clientListFile + "' as the client list file?");
             if (result == JOptionPane.YES_OPTION) {
                 try {
-                    Scanner sc = new Scanner(file);
-                    while (sc.hasNextLine()) {
-                        StringTokenizer st = new StringTokenizer(sc.nextLine());
+                    Scanner scanner = new Scanner(file);
+                    while (scanner.hasNextLine()) {
+                        StringTokenizer st = new StringTokenizer(scanner.nextLine());
                         String name = st.nextToken();
                         String hostName = st.nextToken();
                         clientList.add(new Person(name, hostName));
                     }
-                    sc.close();
+                    scanner.close();
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }
@@ -82,19 +82,18 @@ public class ServerView extends Observable {
             if (result == JFileChooser.APPROVE_OPTION) {
                 try {
                     File newClientListFile = fileChooser.getSelectedFile();
-                    Scanner sc = new Scanner(newClientListFile);
-                    PrintStream ps = new PrintStream(file);
-                    //doubt
-                    while (sc.hasNextLine()) {
-                        StringTokenizer st = new StringTokenizer(sc.nextLine());
+                    Scanner scanner = new Scanner(newClientListFile);
+                    PrintStream printStream = new PrintStream(file);
+                    while (scanner.hasNextLine()) {
+                        StringTokenizer st = new StringTokenizer(scanner.nextLine());
                         String name = st.nextToken();
                         String hostName = st.nextToken();
-                        ps.println(name + " " + hostName);
+                        printStream.println(name + " " + hostName);
                         clientList.add(new Person(name, hostName));
                     }
-                    sc.close();
-                    ps.close();
-                } catch (Exception e) {
+                    printStream.close();
+                    scanner.close();
+                } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }
             }
@@ -102,15 +101,11 @@ public class ServerView extends Observable {
         return clientList;
     }
 
-    public void setStatus(String status) {
-        statusBar.setText(status);
-        logHistory.append(simpleDateFormat.format(new Date()) + "   " + status + "\n");
-    }
-
     public void setServerModel(ServerModel serverModel) {
+        setStatus("Server started");
         this.serverModel = serverModel;
         connectedTable.setModel(new CustomTableModel(serverModel.getClientList()));
-        serverModel.addObserver(new Observer() {
+        this.serverModel.addObserver(new Observer() {
             @Override
             public void update(Observable observable, Object o) {
                 String action = (String) o;
@@ -122,7 +117,7 @@ public class ServerView extends Observable {
                         setStatus("Received " + action.substring(2));
                         break;
                     case ServerModel.FILES_RECEIVED:
-                        setStatus("All files received from " + action.substring(2));
+                        setStatus("Received all files from '" + action.substring(2) + "'");
                         break;
                     case ServerModel.FILE_SEND_STARTED:
                         setStatus("Transferring " + action.substring(2));
@@ -131,11 +126,19 @@ public class ServerView extends Observable {
                         setStatus("Transferred " + action.substring(2));
                         break;
                     case ServerModel.FILES_SENT:
-                        setStatus("Transfer to " + action.substring(2) + " complete!!");
+                        setStatus("Transferred all files to '" + action.substring(2) + "'");
+                        break;
+                    case ServerModel.CLIENT_CONNECTED:
+                        setStatus("Connected to client '" + action.substring(2) + "'");
                         break;
                 }
             }
         });
+    }
+
+    public void setStatus(String status) {
+        statusBar.setText(status);
+        logHistory.append(simpleDateFormat.format(new Date()) + "   " + status + "\n");
     }
 
     public void showMessage(String message) {

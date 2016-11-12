@@ -212,7 +212,7 @@ public class ServerGUI {
                     for (Iterator<Map.Entry<MiniServer, Map<String, Queue<File>>>> it = threadMap.entrySet().iterator();
                          it.hasNext(); ) {
                         Map.Entry<MiniServer, Map<String, Queue<File>>> entry = it.next();
-                        Thread thread = entry.getKey().reqHandlerThread;
+                        Thread thread = new Thread();
                         // If the thread has completed execution...
                         if (thread != null && thread.getState() == Thread.State.TERMINATED) {
                             for (String sockHostName : entry.getValue().keySet()) {
@@ -298,7 +298,7 @@ public class ServerGUI {
                                 q.add(f);
                             }
                             // Spawn a new thread for transferring the files from the server to the client
-                            Thread t = new Thread(ms = new MiniServer(sc, tempFileList, null, null));
+                            Thread t = new Thread(ms = new MiniServer(sc, tempFileList, null, null, true));
                             t.start();
                             // Create a map from the client hostname to the list of files that need to be transferred
                             Map<String, Queue<File>> fileMap = Collections.singletonMap(hostName, q);

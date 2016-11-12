@@ -304,7 +304,7 @@ public class ClientGUI {
                     // Socket for accepting files from the server
                     Socket sc = new Socket(hostName, 9600);
                     // Spawn a new thread for reading the files
-                    new Thread(new MiniClient(sc, null, downloadsFolder)).start();
+                    new Thread(new MiniClient(sc, downloadsFolder)).start();
                     // To avoid memory- and network-hogging
                     Thread.sleep(4000);
                 } catch (IOException e) {

@@ -6,7 +6,7 @@ import java.util.Objects;
  * This class stores information about a single client - with fields for a human-readable identifier {@code name} and
  * the host name of the client {@code hostName}.
  */
-class Person {
+public class Person {
     private String name;
     private String hostName;
 
@@ -14,7 +14,7 @@ class Person {
      * @param name     human-readable identifier for the client
      * @param hostName the client's host name
      */
-    Person(String name, String hostName) {
+    public Person(String name, String hostName) {
         this.name = name;
         this.hostName = hostName;
     }
@@ -35,10 +35,14 @@ class Person {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         Person person = (Person) o;
-        return Objects.equals(hostName, person.hostName);
+        return hostName.equals(person.getHostName());
     }
 
     @Override

@@ -1,16 +1,15 @@
 package inspire;
 
-import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
 public class ClientController {
-    private Thread autoServerConnectorThread;
-    private ClientModel clientModel;
-    private ClientView clientView;
+    private static ClientModel clientModel;
+    private static ClientView clientView;
 
-    public ClientController() {
+    public static void main(String[] args) {
         clientView = new ClientView();
         clientView.addObserver(new Observer() {
             @Override
@@ -22,7 +21,7 @@ public class ClientController {
                         break;
                     case ClientView.GET_LIST:
                         if (clientModel == null) {
-                            clientView.showMessage("Start the client first!");
+                            clientView.showMessage("Start the client first!!");
                         } else {
                             clientModel.getList();
                         }
@@ -31,8 +30,7 @@ public class ClientController {
                         clientModel.setDownloadsFolder(action.substring(2));
                         break;
                     case ClientView.SEND:
-                        List<File> selectedFiles = clientView.getSelectedFiles();
-                        clientModel.send(selectedFiles, clientView.getSelectedPeopleIndices());
+                        clientModel.send(clientView.getSelectedFiles(), clientView.getReceiverIndices());
                         break;
                     case ClientView.DISCONNECTED_CLIENT:
                         clientModel = null;
@@ -41,45 +39,49 @@ public class ClientController {
                 }
             }
         });
-        autoServerConnectorThread = autoServerConnector();
+        autoServerConnector();
     }
 
-    public static void main(String[] args) {
-        new ClientController();
-    }
-
-    private void startClient() {
+    private static void startClient() {
         if (clientModel == null) {
             String serverHostName = ClientView.getServerHostName(System.getProperty("java.io.tmpdir") + "/" + "__ServerHostName__.txt");
-            try {
-                clientModel = new ClientModel(serverHostName);
-                clientView.setClientModel(clientModel);
-            } catch (Exception e) {
-                e.printStackTrace();
+            if (serverHostName != null && serverHostName.length() > 0) {
+                try {
+                    clientModel = new ClientModel(serverHostName);
+                    clientView.setClientModel(clientModel);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         } else {
-            clientView.showMessage("You are already connected to " + clientModel.getServerHostName());
+            clientView.showMessage("You are already connected to '" + clientModel.getServerHostName() + "'!!");
         }
     }
 
-    private Thread autoServerConnector() {
-        List<String> autoServerNameList = ClientView.getAutoServerList(System.getProperty("java.io.tmpdir") + "/" + "__AutoServerHostNames__.txt");
+    private static void autoServerConnector() {
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
+                List<String> autoServerNameList;
                 while (true) {
-                    if (clientModel == null) {
-                        for (String hostName : autoServerNameList) {
-                            try {
-                                clientModel = new ClientModel(hostName);
-                                clientView.setClientModel(clientModel);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                            break;
-                        }
+                    autoServerNameList = ClientView.getAutoServerList(System.getProperty("java.io.tmpdir") + "/" + "__AutoServerHostNames__.txt");
+                    if (autoServerNameList.size() > 0) {
+                        break;
                     }
+                }
+                while (true) {
                     try {
+                        if (clientModel == null) {
+                            for (String hostName : autoServerNameList) {
+                                try {
+                                    clientModel = new ClientModel(hostName);
+                                    clientView.setClientModel(clientModel);
+                                    break;
+                                } catch (IOException e) {
+                                    continue;
+                                }
+                            }
+                        }
                         Thread.sleep(4000);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
@@ -88,6 +90,5 @@ public class ClientController {
             }
         });
         thread.start();
-        return thread;
     }
 }

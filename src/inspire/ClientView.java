@@ -3,8 +3,6 @@ package inspire;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
@@ -97,10 +95,10 @@ public class ClientView extends Observable {
                             notifyObservers(String.valueOf(SEND));
                         }
                     } else {
-                        showMessage("Choose a file first!");
+                        showMessage("Choose a file first!!");
                     }
                 } else {
-                    showMessage("Select the receiver(s) first!");
+                    showMessage("Select the receiver(s) first!!");
                 }
             }
         });
@@ -109,16 +107,39 @@ public class ClientView extends Observable {
         fileList.setModel(new DefaultListModel());
         statusBar.setText("");
         JFrame frame = new JFrame("Client");
-        frame.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent windowEvent) {
-                super.windowClosing(windowEvent);
-            }
-        });
         frame.setContentPane(rootPanel);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
+    }
+
+    public static String getServerHostName(String serverHostNameFile) {
+        File file = new File(serverHostNameFile);
+        String serverHostName = "";
+        int result = JOptionPane.NO_OPTION;
+        if (file.exists()) {
+            try {
+                Scanner scanner = new Scanner(file);
+                serverHostName = scanner.nextLine();
+                scanner.close();
+                result = JOptionPane.showConfirmDialog(null, "Use '" + serverHostName + "' as the server host name?");
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+        if (!file.exists() || result != JOptionPane.YES_OPTION) {
+            serverHostName = JOptionPane.showInputDialog("Enter the host name of the server");
+            if (serverHostName != null) {
+                try {
+                    PrintStream printStream = new PrintStream(file);
+                    printStream.println(serverHostName);
+                    printStream.close();
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return serverHostName;
     }
 
     public static List<String> getAutoServerList(String autoServerListFile) {
@@ -126,7 +147,7 @@ public class ClientView extends Observable {
         List<String> autoServerNameList = new ArrayList<>();
         int result = JOptionPane.NO_OPTION;
         if (file.exists()) {
-            result = JOptionPane.showConfirmDialog(null, "Use " + autoServerListFile + " as the automatic server host names file?");
+            result = JOptionPane.showConfirmDialog(null, "Use '" + autoServerListFile + "' as the automatic server host names file?");
         }
         if (!file.exists() || result != JOptionPane.YES_OPTION) {
             JFileChooser fileChooser = new JFileChooser();
@@ -137,76 +158,37 @@ public class ClientView extends Observable {
             if (result == JFileChooser.APPROVE_OPTION) {
                 File selectedFile = fileChooser.getSelectedFile();
                 try {
-                    Scanner sc = new Scanner(selectedFile);
-                    PrintStream ps = new PrintStream(file);
+                    Scanner scanner = new Scanner(selectedFile);
+                    PrintStream printStream = new PrintStream(file);
                     String hostName;
-                    while (sc.hasNextLine()) {
-                        hostName = sc.nextLine();
-                        ps.println(hostName);
+                    while (scanner.hasNextLine()) {
+                        hostName = scanner.nextLine();
+                        printStream.println(hostName);
                         autoServerNameList.add(hostName);
                     }
-                    sc.close();
-                    ps.close();
+                    printStream.close();
+                    scanner.close();
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }
             }
         } else {
             try {
-                Scanner sc = new Scanner(file);
+                Scanner scanner = new Scanner(file);
                 String hostName;
-                while (sc.hasNextLine()) {
-                    hostName = sc.nextLine();
+                while (scanner.hasNextLine()) {
+                    hostName = scanner.nextLine();
                     autoServerNameList.add(hostName);
                 }
-                sc.close();
+                scanner.close();
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
         }
-
         return autoServerNameList;
     }
 
-    public static String getServerHostName(String serverHostNameFile) {
-        File file = new File(serverHostNameFile);
-        String serverHostName = "";
-        int result = JOptionPane.NO_OPTION;
-        if (file.exists()) {
-            try {
-                Scanner sc = new Scanner(file);
-                serverHostName = sc.nextLine();
-                sc.close();
-                result = JOptionPane.showConfirmDialog(null, "Use " + serverHostName + " as the server host name?");
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-        }
-        if (!file.exists() || result != JOptionPane.YES_OPTION) {
-            serverHostName = JOptionPane.showInputDialog("Enter the host name of the server");
-            if (serverHostName != null) {
-                try {
-                    PrintStream ps = new PrintStream(file);
-                    ps.println(serverHostName);
-                    ps.close();
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        return serverHostName;
-    }
-
-    public void setStatus(String status) {
-        statusBar.setText(status);
-        logHistory.append(simpleDateFormat.format(new Date()) + "   " + status + "\n");
-    }
-
-    public void listChanged() {
-        clientListTable.setModel(new CustomTableModel(clientModel.getClientList()));
-    }
-
-    public int[] getSelectedPeopleIndices() {
+    public int[] getReceiverIndices() {
         return clientListTable.getSelectedRows();
     }
 
@@ -220,39 +202,27 @@ public class ClientView extends Observable {
         return selectedFiles;
     }
 
-    public JPanel getRootPanel() {
-        return rootPanel;
-    }
-
-    public void showMessage(String message) {
-        JOptionPane.showMessageDialog(rootPanel, message);
-    }
-
     public void setClientModel(ClientModel clientModel) {
+        this.clientModel = clientModel;
         if (clientModel == null) {
-            this.clientModel = null;
             return;
         }
-        this.clientModel = clientModel;
+        setStatus("Connected to " + clientModel.getServerHostName());
         clientModel.addObserver(new Observer() {
             @Override
             public void update(Observable observable, Object o) {
                 String action = (String) o;
                 switch (action.charAt(0)) {
                     case ClientModel.LIST_CHANGED:
-                        listChanged();
-                        break;
-                    case ClientModel.CONNECTED:
-                        //status bar
+                        clientListTable.setModel(new CustomTableModel(clientModel.getClientList()));
                         break;
                     case ClientModel.DISCONNECTED:
-                        showMessage("Disconnected from " + clientModel.getServerHostName());
+                        setStatus("Disconnected from '" + clientModel.getServerHostName() + "'");
                         setChanged();
                         notifyObservers(String.valueOf(DISCONNECTED_CLIENT));
                         break;
                     case ClientModel.TRANSFER_STARTED:
                         fileList.setModel(new DefaultListModel());
-                        //status bar
                         break;
                     case ClientModel.FILE_RECEIVE_STARTED:
                         setStatus("Receiving " + action.substring(2));
@@ -261,7 +231,7 @@ public class ClientView extends Observable {
                         setStatus("Received " + action.substring(2));
                         break;
                     case ClientModel.FILES_RECEIVED:
-                        setStatus("Files received successfully!!");
+                        setStatus("Received all files from '" + clientModel.getServerHostName() + "'");
                         break;
                     case ClientModel.FILE_SEND_STARTED:
                         setStatus("Transferring " + action.substring(2));
@@ -270,10 +240,19 @@ public class ClientView extends Observable {
                         setStatus("Transferred " + action.substring(2));
                         break;
                     case ClientModel.FILES_SENT:
-                        setStatus("Files transferred successfully!!");
+                        setStatus("Transferred all files to '" + clientModel.getServerHostName() + "'");
                         break;
                 }
             }
         });
+    }
+
+    public void setStatus(String status) {
+        statusBar.setText(status);
+        logHistory.append(simpleDateFormat.format(new Date()) + "   " + status + "\n");
+    }
+
+    public void showMessage(String message) {
+        JOptionPane.showMessageDialog(rootPanel, message);
     }
 }
