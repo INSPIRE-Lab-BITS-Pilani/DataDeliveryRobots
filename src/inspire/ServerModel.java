@@ -6,6 +6,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ServerModel extends Observable implements Runnable {
     public static final char FILE_RECEIVE_STARTED = '0';
@@ -16,12 +17,14 @@ public class ServerModel extends Observable implements Runnable {
     public static final char FILES_SENT = '5';
 
     private List<Person> clientList;
+    private Map<String, Set<File>> clientFileMap;
     private String downloadsFolder;
     private ServerSocket serverSocket;
     private Thread serverThread;
 
     public ServerModel(List<Person> clientList) throws Exception {
         this.clientList = clientList;
+        clientFileMap = new ConcurrentHashMap<>();
         downloadsFolder = System.getProperty("java.io.tmpdir");
         serverSocket = new ServerSocket(9000);
         serverThread = new Thread(this);
@@ -50,6 +53,7 @@ public class ServerModel extends Observable implements Runnable {
             ServerSocket miniServerSocket = new ServerSocket(9600);
             while (true) {
                 Socket clientSocket = serverSocket.accept();
+                clientFileMap.put(getHostName(clientSocket), new HashSet<>());
                 Thread listPasser = new Thread(new ListPasser(
                         new BufferedReader(new InputStreamReader(clientSocket.getInputStream())),
                         new PrintWriter(clientSocket.getOutputStream())
@@ -99,6 +103,7 @@ public class ServerModel extends Observable implements Runnable {
                                                 notifyObservers(String.valueOf(ServerModel.FILE_SEND_FINISHED) + " " + action.substring(2));
                                                 break;
                                             case MiniServer.FILES_SENT:
+                                                clientFileMap.get(hostName).removeAll(fileList);
                                                 receiverList.remove(action.substring(2));
                                                 setChanged();
                                                 notifyObservers(String.valueOf(ServerModel.FILES_SENT) + " " + action.substring(2));
@@ -142,6 +147,9 @@ public class ServerModel extends Observable implements Runnable {
                                     notifyObservers(String.valueOf(ServerModel.FILE_RECEIVE_FINISHED) + " " + action.substring(2));
                                     break;
                                 case MiniClient.FILES_RECEIVED:
+                                    for (String hostName : receiverList) {
+                                        clientFileMap.get(hostName).addAll(fileList);
+                                    }
                                     send(new HashSet<>(receiverList), fileList);
                                     setChanged();
                                     notifyObservers(String.valueOf(ServerModel.FILES_RECEIVED) + " " + hostName);
