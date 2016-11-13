@@ -207,7 +207,7 @@ public class ClientView extends Observable {
         if (clientModel == null) {
             return;
         }
-        setStatus("Connected to " + clientModel.getServerHostName());
+        setStatus("Connected to '" + clientModel.getServerHostName() + "'");
         clientModel.addObserver(new Observer() {
             @Override
             public void update(Observable observable, Object o) {
