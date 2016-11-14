@@ -131,7 +131,7 @@ public class ClientModel extends Observable implements Runnable {
     public void run() {
         while (true) {
             try {
-                if (miniClientThread == null || !miniClientThread.isAlive()) {
+                if (miniClientThread == null || miniClientThread.getState() == Thread.State.TERMINATED) {
                     Socket socket = new Socket(serverHostName, dataPort);
                     MiniClient miniClient = new MiniClient(socket, downloadsFolder);
                     miniClientThread = new Thread(miniClient);

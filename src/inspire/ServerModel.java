@@ -29,6 +29,9 @@ public class ServerModel extends Observable implements Runnable {
         try {
             this.clientList = clientList;
             this.clientFileMap = new ConcurrentHashMap<>();
+            for (Person client : clientList) {
+                clientFileMap.put(client.getHostName(), Collections.synchronizedSet(new HashSet<>()));
+            }
             this.downloadsFolder = downloadsFolder;
             this.serverSocket = new ServerSocket(controlPort);
             Thread serverThread = new Thread(this);
@@ -62,7 +65,6 @@ public class ServerModel extends Observable implements Runnable {
                 Socket clientSocket = serverSocket.accept();
                 setChanged();
                 notifyObservers(String.valueOf(CLIENT_CONNECTED) + " " + getHostName(clientSocket));
-                clientFileMap.put(getHostName(clientSocket), Collections.synchronizedSet(new HashSet<>()));
                 Thread listPasser = new Thread(new ListPasser(
                         new BufferedReader(new InputStreamReader(clientSocket.getInputStream())),
                         new PrintWriter(clientSocket.getOutputStream())
@@ -127,9 +129,12 @@ public class ServerModel extends Observable implements Runnable {
                         }
                     });
                     miniClientThread.start();
-                    Thread.sleep(4000);
-                } catch (IOException | InterruptedException e) {
-                    e.printStackTrace();
+                } catch (IOException e) {
+                    try {
+                        Thread.sleep(4000);
+                    } catch (InterruptedException e1) {
+                        e1.printStackTrace();
+                    }
                 }
             }
         }
