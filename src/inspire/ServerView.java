@@ -20,6 +20,7 @@ public class ServerView extends Observable {
     private JTable connectedTable;
     private JTextArea logHistory;
     private JLabel statusBar;
+    private JButton clearLogButton;
     private ServerModel serverModel;
 
     public ServerView() {
@@ -41,6 +42,12 @@ public class ServerView extends Observable {
                     setChanged();
                     notifyObservers(String.valueOf(DOWNLOADS_FOLDER) + " " + fileChooser.getSelectedFile().getAbsolutePath());
                 }
+            }
+        });
+        clearLogButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                logHistory.setText("");
             }
         });
         connectedTable.setModel(new CustomTableModel(new ArrayList<>()));

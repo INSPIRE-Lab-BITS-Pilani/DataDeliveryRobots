@@ -165,13 +165,13 @@ public class ServerModel extends Observable implements Runnable {
                                                 break;
                                             case MiniServer.FILES_SENT:
                                                 clientFileMap.get(hostName).removeAll(fileList);
-                                                receiverList.remove(action.substring(2));
                                                 setChanged();
                                                 notifyObservers(String.valueOf(FILES_SENT) + " " + action.substring(2));
                                                 break;
                                         }
                                     }
                                 });
+                                receiverList.remove(hostName);
                                 miniServerThread.start();
                             }
                         } catch (IOException e) {

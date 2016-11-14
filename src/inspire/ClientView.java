@@ -28,6 +28,7 @@ public class ClientView extends Observable {
     private JButton deleteFilesButton;
     private JLabel statusBar;
     private JTextArea logHistory;
+    private JButton clearLogButton;
     private ClientModel clientModel;
 
     public ClientView() {
@@ -100,6 +101,12 @@ public class ClientView extends Observable {
                 } else {
                     showMessage("Select the receiver(s) first!!");
                 }
+            }
+        });
+        clearLogButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                logHistory.setText("");
             }
         });
         clientListTable.setModel(new CustomTableModel(new ArrayList<>()));

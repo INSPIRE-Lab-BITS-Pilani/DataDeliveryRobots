@@ -131,32 +131,30 @@ public class ClientModel extends Observable implements Runnable {
     public void run() {
         while (true) {
             try {
-                if (miniClientThread == null || !miniClientThread.isAlive()) {
-                    Socket socket = new Socket(serverHostName, dataPort);
-                    MiniClient miniClient = new MiniClient(socket, downloadsFolder);
-                    miniClientThread = new Thread(miniClient);
-                    miniClient.addObserver(new Observer() {
-                        @Override
-                        public void update(Observable observable, Object o) {
-                            String action = (String) o;
-                            switch (action.charAt(0)) {
-                                case MiniClient.FILE_RECEIVE_STARTED:
-                                    setChanged();
-                                    notifyObservers(String.valueOf(ClientModel.FILE_RECEIVE_STARTED) + " " + action.substring(2));
-                                    break;
-                                case MiniClient.FILE_RECEIVE_FINISHED:
-                                    setChanged();
-                                    notifyObservers(String.valueOf(ClientModel.FILE_RECEIVE_FINISHED) + " " + action.substring(2));
-                                    break;
-                                case MiniClient.FILES_RECEIVED:
-                                    setChanged();
-                                    notifyObservers(String.valueOf(ClientModel.FILES_RECEIVED));
-                                    break;
-                            }
+                Socket socket = new Socket(serverHostName, dataPort);
+                MiniClient miniClient = new MiniClient(socket, downloadsFolder);
+                miniClientThread = new Thread(miniClient);
+                miniClient.addObserver(new Observer() {
+                    @Override
+                    public void update(Observable observable, Object o) {
+                        String action = (String) o;
+                        switch (action.charAt(0)) {
+                            case MiniClient.FILE_RECEIVE_STARTED:
+                                setChanged();
+                                notifyObservers(String.valueOf(ClientModel.FILE_RECEIVE_STARTED) + " " + action.substring(2));
+                                break;
+                            case MiniClient.FILE_RECEIVE_FINISHED:
+                                setChanged();
+                                notifyObservers(String.valueOf(ClientModel.FILE_RECEIVE_FINISHED) + " " + action.substring(2));
+                                break;
+                            case MiniClient.FILES_RECEIVED:
+                                setChanged();
+                                notifyObservers(String.valueOf(ClientModel.FILES_RECEIVED));
+                                break;
                         }
-                    });
-                    miniClientThread.start();
-                }
+                    }
+                });
+                miniClientThread.start();
                 Thread.sleep(4000);
             } catch (IOException e) {
                 setChanged();

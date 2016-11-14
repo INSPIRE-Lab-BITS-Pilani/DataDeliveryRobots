@@ -73,7 +73,7 @@ public class MiniClient extends Observable implements Runnable {
                 FileOutputStream fileOutputStream = new FileOutputStream(downloadsFolder + "/" + fileName);
                 while (true) {
                     // Number of bytes read
-                    int bytesRead = dataInputStream.read(buffer, 0, (size - count) > 1024 * 1024 ? 1024 * 1024 : (int) (size - count));
+                    int bytesRead = dataInputStream.read(buffer, 0, ((int) (size - count)) > 1024 * 1024 ? 1024 * 1024 : (int) (size - count));
                     fileOutputStream.write(buffer, 0, bytesRead);
                     count += bytesRead;
                     if (count == size) {
