@@ -44,7 +44,8 @@ public class ClientController {
 
     private static void startClient() {
         if (clientModel == null) {
-            String serverHostName = ClientView.getServerHostName(System.getProperty("java.io.tmpdir") + "/" + "__ServerHostName__.txt");
+            String serverHostName = ClientView.getServerHostName(System.getProperty("java.io.tmpdir") + "/"
+                    + "__ServerHostName__.txt");
             if (serverHostName != null && serverHostName.length() > 0) {
                 try {
                     clientModel = new ClientModel(serverHostName);
@@ -64,7 +65,8 @@ public class ClientController {
             public void run() {
                 List<String> autoServerNameList;
                 while (true) {
-                    autoServerNameList = ClientView.getAutoServerList(System.getProperty("java.io.tmpdir") + "/" + "__AutoServerHostNames__.txt");
+                    autoServerNameList = ClientView.getAutoServerList(System.getProperty("java.io.tmpdir") + "/"
+                            + "__AutoServerHostNames__.txt");
                     if (autoServerNameList.size() > 0) {
                         break;
                     }
@@ -77,8 +79,7 @@ public class ClientController {
                                     clientModel = new ClientModel(hostName);
                                     clientView.setClientModel(clientModel);
                                     break;
-                                } catch (IOException e) {
-                                    continue;
+                                } catch (IOException ignored) {
                                 }
                             }
                         }

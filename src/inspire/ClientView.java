@@ -10,12 +10,12 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class ClientView extends Observable {
-    public static final char START_CLIENT = '0';
-    public static final char GET_LIST = '1';
-    public static final char DOWNLOADS_FOLDER = '2';
-    public static final char SEND = '3';
-    public static final char DISCONNECTED_CLIENT = '4';
-    public static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("h:mm a");
+    static final char START_CLIENT = '0';
+    static final char GET_LIST = '1';
+    static final char DOWNLOADS_FOLDER = '2';
+    static final char SEND = '3';
+    static final char DISCONNECTED_CLIENT = '4';
+    private static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("h:mm a");
 
     private JButton startClientButton;
     private JButton getListButton;
@@ -29,9 +29,8 @@ public class ClientView extends Observable {
     private JLabel statusBar;
     private JTextArea logHistory;
     private JButton clearLogButton;
-    private ClientModel clientModel;
 
-    public ClientView() {
+    ClientView() {
         startClientButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
@@ -70,7 +69,8 @@ public class ClientView extends Observable {
                 int result = fileChooser.showOpenDialog(rootPanel);
                 if (result == JFileChooser.APPROVE_OPTION) {
                     setChanged();
-                    notifyObservers(String.valueOf(DOWNLOADS_FOLDER) + " " + fileChooser.getSelectedFile().getAbsolutePath());
+                    notifyObservers(String.valueOf(DOWNLOADS_FOLDER) + " "
+                            + fileChooser.getSelectedFile().getAbsolutePath());
                 }
             }
         });
@@ -109,8 +109,7 @@ public class ClientView extends Observable {
                 logHistory.setText("");
             }
         });
-        clientListTable.setModel(new CustomTableModel(new ArrayList<>()));
-        clientModel = null;
+        clientListTable.setModel(new CustomTableModel(new ArrayList<Person>()));
         fileList.setModel(new DefaultListModel());
         statusBar.setText("");
         JFrame frame = new JFrame("Client");
@@ -120,7 +119,7 @@ public class ClientView extends Observable {
         frame.setVisible(true);
     }
 
-    public static String getServerHostName(String serverHostNameFile) {
+    static String getServerHostName(String serverHostNameFile) {
         File file = new File(serverHostNameFile);
         String serverHostName = "";
         int result = JOptionPane.NO_OPTION;
@@ -149,12 +148,13 @@ public class ClientView extends Observable {
         return serverHostName;
     }
 
-    public static List<String> getAutoServerList(String autoServerListFile) {
+    static List<String> getAutoServerList(String autoServerListFile) {
         File file = new File(autoServerListFile);
         List<String> autoServerNameList = new ArrayList<>();
         int result = JOptionPane.NO_OPTION;
         if (file.exists()) {
-            result = JOptionPane.showConfirmDialog(null, "Use '" + autoServerListFile + "' as the automatic server host names file?");
+            result = JOptionPane.showConfirmDialog(null, "Use '" + autoServerListFile
+                    + "' as the automatic server host names file?");
         }
         if (!file.exists() || result != JOptionPane.YES_OPTION) {
             JFileChooser fileChooser = new JFileChooser();
@@ -195,11 +195,11 @@ public class ClientView extends Observable {
         return autoServerNameList;
     }
 
-    public int[] getReceiverIndices() {
+    int[] getReceiverIndices() {
         return clientListTable.getSelectedRows();
     }
 
-    public List<File> getSelectedFiles() {
+    List<File> getSelectedFiles() {
         List<File> selectedFiles = new ArrayList<>();
         ListModel listModel = fileList.getModel();
         int size = listModel.getSize();
@@ -209,8 +209,7 @@ public class ClientView extends Observable {
         return selectedFiles;
     }
 
-    public void setClientModel(ClientModel clientModel) {
-        this.clientModel = clientModel;
+    void setClientModel(final ClientModel clientModel) {
         if (clientModel == null) {
             return;
         }
@@ -254,12 +253,12 @@ public class ClientView extends Observable {
         });
     }
 
-    public void setStatus(String status) {
+    private void setStatus(String status) {
         statusBar.setText(status);
         logHistory.append(simpleDateFormat.format(new Date()) + "   " + status + "\n");
     }
 
-    public void showMessage(String message) {
+    void showMessage(String message) {
         JOptionPane.showMessageDialog(rootPanel, message);
     }
 }

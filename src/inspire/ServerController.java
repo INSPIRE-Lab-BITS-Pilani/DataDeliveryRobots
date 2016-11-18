@@ -26,7 +26,7 @@ public class ServerController {
         });
     }
 
-    public static void startServer() {
+    private static void startServer() {
         if (serverModel == null) {
             List<Person> clientList = serverView.getClientList(
                     System.getProperty("java.io.tmpdir") + "/" + "__ClientListFile__.txt"

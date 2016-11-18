@@ -7,18 +7,18 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.*;
 
-public class ClientModel extends Observable implements Runnable {
-    public static final int controlPort = 9000;
-    public static final int dataPort = 9600;
-    public static final char LIST_CHANGED = '0';
-    public static final char DISCONNECTED = '1';
-    public static final char TRANSFER_STARTED = '2';
-    public static final char FILE_RECEIVE_STARTED = '3';
-    public static final char FILE_RECEIVE_FINISHED = '4';
-    public static final char FILES_RECEIVED = '5';
-    public static final char FILE_SEND_STARTED = '6';
-    public static final char FILE_SEND_FINISHED = '7';
-    public static final char FILES_SENT = '8';
+class ClientModel extends Observable implements Runnable {
+    private static final int controlPort = 9000;
+    private static final int dataPort = 9600;
+    static final char LIST_CHANGED = '0';
+    static final char DISCONNECTED = '1';
+    static final char TRANSFER_STARTED = '2';
+    static final char FILE_RECEIVE_STARTED = '3';
+    static final char FILE_RECEIVE_FINISHED = '4';
+    static final char FILES_RECEIVED = '5';
+    static final char FILE_SEND_STARTED = '6';
+    static final char FILE_SEND_FINISHED = '7';
+    static final char FILES_SENT = '8';
 
     private List<Person> clientList;
     private String downloadsFolder;
@@ -28,7 +28,7 @@ public class ClientModel extends Observable implements Runnable {
     private PrintWriter printWriter;
     private BufferedReader bufferedReader;
 
-    public ClientModel(String serverHostName) throws IOException {
+    ClientModel(String serverHostName) throws IOException {
         try {
             this.clientList = new ArrayList<>();
             this.downloadsFolder = System.getProperty("user.home") + "/Downloads";
@@ -76,26 +76,27 @@ public class ClientModel extends Observable implements Runnable {
         return clientList;
     }
 
-    public String getServerHostName() {
+    String getServerHostName() {
         return serverHostName;
     }
 
-    public void setDownloadsFolder(String downloadsFolder) {
+    void setDownloadsFolder(String downloadsFolder) {
         this.downloadsFolder = downloadsFolder;
     }
 
-    public void getList() {
+    void getList() {
         printWriter.println("getlist");
         printWriter.flush();
     }
 
-    public void send(List<File> fileList, int[] receiverIndices) {
+    void send(List<File> fileList, int[] receiverIndices) {
         try {
             List<String> receiverList = new ArrayList<>();
             for (int i : receiverIndices) {
                 receiverList.add(clientList.get(i).getHostName());
             }
-            ServerSocket serverSocket = new ServerSocket(dataPort + clientList.indexOf(new Person(null, myHostName)) + 1);
+            ServerSocket serverSocket = new ServerSocket(dataPort + clientList.indexOf(new Person(null, myHostName))
+                    + 1);
             Socket socket = serverSocket.accept();
             setChanged();
             notifyObservers(String.valueOf(TRANSFER_STARTED));
@@ -141,11 +142,13 @@ public class ClientModel extends Observable implements Runnable {
                         switch (action.charAt(0)) {
                             case MiniClient.FILE_RECEIVE_STARTED:
                                 setChanged();
-                                notifyObservers(String.valueOf(ClientModel.FILE_RECEIVE_STARTED) + " " + action.substring(2));
+                                notifyObservers(String.valueOf(ClientModel.FILE_RECEIVE_STARTED) + " "
+                                        + action.substring(2));
                                 break;
                             case MiniClient.FILE_RECEIVE_FINISHED:
                                 setChanged();
-                                notifyObservers(String.valueOf(ClientModel.FILE_RECEIVE_FINISHED) + " " + action.substring(2));
+                                notifyObservers(String.valueOf(ClientModel.FILE_RECEIVE_FINISHED) + " "
+                                        + action.substring(2));
                                 break;
                             case MiniClient.FILES_RECEIVED:
                                 setChanged();

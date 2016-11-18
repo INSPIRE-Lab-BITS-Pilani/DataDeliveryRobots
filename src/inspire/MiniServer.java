@@ -16,9 +16,9 @@ import java.util.Observable;
  * the Server and Client classes.
  */
 public class MiniServer extends Observable implements Runnable {
-    public static final char FILE_SEND_STARTED = '0';
-    public static final char FILE_SEND_FINISHED = '1';
-    public static final char FILES_SENT = '2';
+    static final char FILE_SEND_STARTED = '0';
+    static final char FILE_SEND_FINISHED = '1';
+    static final char FILES_SENT = '2';
     /**
      * The thread created from this {@code MiniServer} instance. It is used in the Server class (once the thread
      * terminates, the corresponding files can be removed from the {@code clientFileListMap} and deleted if possible).
@@ -36,7 +36,8 @@ public class MiniServer extends Observable implements Runnable {
      * @param serverSocket the server socket created for sending (in the Client case, this should be closed after
      *                     file transfer is complete)
      */
-    public MiniServer(Socket socket, List<File> fileList, List<String> receiverList, ServerSocket serverSocket, boolean deleteFiles) {
+    public MiniServer(Socket socket, List<File> fileList, List<String> receiverList, ServerSocket serverSocket,
+           boolean deleteFiles) {
         this.socket = socket;
         this.fileList = fileList;
         this.receiverList = receiverList;

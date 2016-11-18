@@ -11,10 +11,10 @@ import java.util.Observable;
  * both the Server and Client classes.
  */
 public class MiniClient extends Observable implements Runnable {
-    public static final char FILE_RECEIVE_STARTED = '0';
-    public static final char FILE_RECEIVE_FINISHED = '1';
-    public static final char FILES_RECEIVED = '2';
-    public static final char RECEIVER_ADDED = '3';
+    static final char FILE_RECEIVE_STARTED = '0';
+    static final char FILE_RECEIVE_FINISHED = '1';
+    static final char FILES_RECEIVED = '2';
+    static final char RECEIVER_ADDED = '3';
 
     private Socket socket;
     private String downloadsFolder;
@@ -73,7 +73,8 @@ public class MiniClient extends Observable implements Runnable {
                 FileOutputStream fileOutputStream = new FileOutputStream(downloadsFolder + "/" + fileName);
                 while (true) {
                     // Number of bytes read
-                    int bytesRead = dataInputStream.read(buffer, 0, ((int) (size - count)) > 1024 * 1024 ? 1024 * 1024 : (int) (size - count));
+                    int bytesRead = dataInputStream.read(buffer, 0, ((int) (size - count)) > 1024 * 1024 ? 1024 * 1024
+                            : (int) (size - count));
                     fileOutputStream.write(buffer, 0, bytesRead);
                     count += bytesRead;
                     if (count == size) {

@@ -10,8 +10,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class ServerView extends Observable {
-    public static final char START_SERVER = '0';
-    public static final char DOWNLOADS_FOLDER = '1';
+    static final char START_SERVER = '0';
+    static final char DOWNLOADS_FOLDER = '1';
     private static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("h:mm a");
 
     private JPanel rootPanel;
@@ -21,9 +21,8 @@ public class ServerView extends Observable {
     private JTextArea logHistory;
     private JLabel statusBar;
     private JButton clearLogButton;
-    private ServerModel serverModel;
 
-    public ServerView() {
+    ServerView() {
         startServerButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -40,7 +39,8 @@ public class ServerView extends Observable {
                 int result = fileChooser.showOpenDialog(rootPanel);
                 if (result == JFileChooser.APPROVE_OPTION) {
                     setChanged();
-                    notifyObservers(String.valueOf(DOWNLOADS_FOLDER) + " " + fileChooser.getSelectedFile().getAbsolutePath());
+                    notifyObservers(String.valueOf(DOWNLOADS_FOLDER) + " "
+                            + fileChooser.getSelectedFile().getAbsolutePath());
                 }
             }
         });
@@ -50,7 +50,7 @@ public class ServerView extends Observable {
                 logHistory.setText("");
             }
         });
-        connectedTable.setModel(new CustomTableModel(new ArrayList<>()));
+        connectedTable.setModel(new CustomTableModel(new ArrayList<Person>()));
         statusBar.setText("");
         JFrame frame = new JFrame("Server");
         frame.setContentPane(rootPanel);
@@ -59,7 +59,7 @@ public class ServerView extends Observable {
         frame.setVisible(true);
     }
 
-    public List<Person> getClientList(String clientListFile) {
+    List<Person> getClientList(String clientListFile) {
         File file = new File(clientListFile);
         List<Person> clientList = new ArrayList<>();
         int result = JOptionPane.NO_OPTION;
@@ -108,11 +108,10 @@ public class ServerView extends Observable {
         return clientList;
     }
 
-    public void setServerModel(ServerModel serverModel) {
+    void setServerModel(ServerModel serverModel) {
         setStatus("Server started");
-        this.serverModel = serverModel;
         connectedTable.setModel(new CustomTableModel(serverModel.getClientList()));
-        this.serverModel.addObserver(new Observer() {
+        serverModel.addObserver(new Observer() {
             @Override
             public void update(Observable observable, Object o) {
                 String action = (String) o;
@@ -143,12 +142,12 @@ public class ServerView extends Observable {
         });
     }
 
-    public void setStatus(String status) {
+    private void setStatus(String status) {
         statusBar.setText(status);
         logHistory.append(simpleDateFormat.format(new Date()) + "   " + status + "\n");
     }
 
-    public void showMessage(String message) {
+    void showMessage(String message) {
         JOptionPane.showMessageDialog(rootPanel, message);
     }
 }

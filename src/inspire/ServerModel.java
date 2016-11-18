@@ -8,16 +8,16 @@ import java.net.UnknownHostException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ServerModel extends Observable implements Runnable {
-    public static final int controlPort = 9000;
-    public static final int dataPort = 9600;
-    public static final char FILE_RECEIVE_STARTED = '0';
-    public static final char FILE_RECEIVE_FINISHED = '1';
-    public static final char FILES_RECEIVED = '2';
-    public static final char FILE_SEND_STARTED = '3';
-    public static final char FILE_SEND_FINISHED = '4';
-    public static final char FILES_SENT = '5';
-    public static final char CLIENT_CONNECTED = '6';
+class ServerModel extends Observable implements Runnable {
+    private static final int controlPort = 9000;
+    private static final int dataPort = 9600;
+    static final char FILE_RECEIVE_STARTED = '0';
+    static final char FILE_RECEIVE_FINISHED = '1';
+    static final char FILES_RECEIVED = '2';
+    static final char FILE_SEND_STARTED = '3';
+    static final char FILE_SEND_FINISHED = '4';
+    static final char FILES_SENT = '5';
+    static final char CLIENT_CONNECTED = '6';
 
     private List<Person> clientList;
     private Map<String, Set<File>> clientFileMap;
@@ -25,12 +25,12 @@ public class ServerModel extends Observable implements Runnable {
     private ServerSocket serverSocket;
     private ServerSocket miniServerSocket;
 
-    public ServerModel(List<Person> clientList, String downloadsFolder) {
+    ServerModel(List<Person> clientList, String downloadsFolder) {
         try {
             this.clientList = clientList;
             this.clientFileMap = new ConcurrentHashMap<>();
             for (Person client : clientList) {
-                clientFileMap.put(client.getHostName(), Collections.synchronizedSet(new HashSet<>()));
+                clientFileMap.put(client.getHostName(), Collections.synchronizedSet(new HashSet<File>()));
             }
             this.downloadsFolder = downloadsFolder;
             this.serverSocket = new ServerSocket(controlPort);
@@ -45,7 +45,7 @@ public class ServerModel extends Observable implements Runnable {
         return clientList;
     }
 
-    public void setDownloadsFolder(String downloadsFolder) {
+    void setDownloadsFolder(String downloadsFolder) {
         this.downloadsFolder = downloadsFolder;
     }
 
@@ -96,8 +96,8 @@ public class ServerModel extends Observable implements Runnable {
             while (true) {
                 try {
                     Socket socket = new Socket(hostName, dataPort + clientList.indexOf(new Person(null, hostName)) + 1);
-                    List<String> receiverList = new ArrayList<>();
-                    List<File> fileList = new ArrayList<>();
+                    final List<String> receiverList = new ArrayList<>();
+                    final List<File> fileList = new ArrayList<>();
                     MiniClient miniClient = new MiniClient(socket, downloadsFolder);
                     Thread miniClientThread = new Thread(miniClient);
                     miniClient.addObserver(new Observer() {
@@ -139,14 +139,14 @@ public class ServerModel extends Observable implements Runnable {
             }
         }
 
-        private void send(Set<String> receiverList, List<File> fileList) {
+        private void send(final Set<String> receiverList, final List<File> fileList) {
             Thread handler = new Thread(new Runnable() {
                 @Override
                 public void run() {
                     while (receiverList.size() != 0) {
                         try {
                             Socket socket = miniServerSocket.accept();
-                            String hostName = getHostName(socket);
+                            final String hostName = getHostName(socket);
                             if (receiverList.contains(hostName)) {
                                 MiniServer miniserver = new MiniServer(socket, fileList, null, null, true);
                                 Thread miniServerThread = new Thread(miniserver);
@@ -157,16 +157,19 @@ public class ServerModel extends Observable implements Runnable {
                                         switch (action.charAt(0)) {
                                             case MiniServer.FILE_SEND_STARTED:
                                                 setChanged();
-                                                notifyObservers(String.valueOf(FILE_SEND_STARTED) + " " + action.substring(2));
+                                                notifyObservers(String.valueOf(FILE_SEND_STARTED) + " "
+                                                        + action.substring(2));
                                                 break;
                                             case MiniServer.FILE_SEND_FINISHED:
                                                 setChanged();
-                                                notifyObservers(String.valueOf(FILE_SEND_FINISHED) + " " + action.substring(2));
+                                                notifyObservers(String.valueOf(FILE_SEND_FINISHED) + " "
+                                                        + action.substring(2));
                                                 break;
                                             case MiniServer.FILES_SENT:
                                                 clientFileMap.get(hostName).removeAll(fileList);
                                                 setChanged();
-                                                notifyObservers(String.valueOf(FILES_SENT) + " " + action.substring(2));
+                                                notifyObservers(String.valueOf(FILES_SENT) + " "
+                                                        + action.substring(2));
                                                 break;
                                         }
                                     }
