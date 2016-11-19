@@ -153,8 +153,16 @@ public class ClientView extends Observable {
         List<String> autoServerNameList = new ArrayList<>();
         int result = JOptionPane.NO_OPTION;
         if (file.exists()) {
-            result = JOptionPane.showConfirmDialog(null, "Use '" + autoServerListFile
-                    + "' as the automatic server host names file?");
+            // A file was chosen previously
+            try {
+                Scanner sc = new Scanner(file);
+                autoServerListFile = sc.nextLine();
+                sc.close();
+                result = JOptionPane.showConfirmDialog(null, "Use " + autoServerListFile
+                        + " as the automatic server host names file?");
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
         }
         if (!file.exists() || result != JOptionPane.YES_OPTION) {
             JFileChooser fileChooser = new JFileChooser();
@@ -167,11 +175,13 @@ public class ClientView extends Observable {
                 try {
                     Scanner scanner = new Scanner(selectedFile);
                     PrintStream printStream = new PrintStream(file);
+                    printStream.println(selectedFile.getAbsolutePath());
                     String hostName;
                     while (scanner.hasNextLine()) {
                         hostName = scanner.nextLine();
-                        printStream.println(hostName);
-                        autoServerNameList.add(hostName);
+                        if (!hostName.isEmpty()) {
+                            autoServerNameList.add(hostName);
+                        }
                     }
                     printStream.close();
                     scanner.close();
@@ -181,11 +191,13 @@ public class ClientView extends Observable {
             }
         } else {
             try {
-                Scanner scanner = new Scanner(file);
+                Scanner scanner = new Scanner(new File(autoServerListFile));
                 String hostName;
                 while (scanner.hasNextLine()) {
                     hostName = scanner.nextLine();
-                    autoServerNameList.add(hostName);
+                    if (!hostName.isEmpty()) {
+                        autoServerNameList.add(hostName);
+                    }
                 }
                 scanner.close();
             } catch (FileNotFoundException e) {

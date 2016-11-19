@@ -64,10 +64,14 @@ public class ServerView extends Observable {
         List<Person> clientList = new ArrayList<>();
         int result = JOptionPane.NO_OPTION;
         if (file.exists()) {
-            result = JOptionPane.showConfirmDialog(null, "Use '" + clientListFile + "' as the client list file?");
-            if (result == JOptionPane.YES_OPTION) {
-                try {
-                    Scanner scanner = new Scanner(file);
+            try {
+                // A clientListFile was selected previously
+                Scanner sc = new Scanner(file);
+                clientListFile = sc.nextLine();
+                sc.close();
+                result = JOptionPane.showConfirmDialog(null, "Use '" + clientListFile + "' as the client list file?");
+                if (result == JOptionPane.YES_OPTION) {
+                    Scanner scanner = new Scanner(new File(clientListFile));
                     while (scanner.hasNextLine()) {
                         StringTokenizer st = new StringTokenizer(scanner.nextLine());
                         String name = st.nextToken();
@@ -75,9 +79,9 @@ public class ServerView extends Observable {
                         clientList.add(new Person(name, hostName));
                     }
                     scanner.close();
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
                 }
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
             }
         }
         if (!file.exists() || result != JOptionPane.YES_OPTION) {
@@ -91,11 +95,11 @@ public class ServerView extends Observable {
                     File newClientListFile = fileChooser.getSelectedFile();
                     Scanner scanner = new Scanner(newClientListFile);
                     PrintStream printStream = new PrintStream(file);
+                    printStream.println(newClientListFile.getAbsolutePath());
                     while (scanner.hasNextLine()) {
                         StringTokenizer st = new StringTokenizer(scanner.nextLine());
                         String name = st.nextToken();
                         String hostName = st.nextToken();
-                        printStream.println(name + " " + hostName);
                         clientList.add(new Person(name, hostName));
                     }
                     printStream.close();

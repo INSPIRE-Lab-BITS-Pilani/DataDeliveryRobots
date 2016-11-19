@@ -64,13 +64,8 @@ public class ClientController {
             @Override
             public void run() {
                 List<String> autoServerNameList;
-                while (true) {
-                    autoServerNameList = ClientView.getAutoServerList(System.getProperty("java.io.tmpdir") + "/"
-                            + "__AutoServerHostNames__.txt");
-                    if (autoServerNameList.size() > 0) {
-                        break;
-                    }
-                }
+                autoServerNameList = ClientView.getAutoServerList(System.getProperty("java.io.tmpdir") + "/"
+                        + "__AutoServerHostNames__.txt");
                 while (true) {
                     try {
                         if (clientModel == null) {
