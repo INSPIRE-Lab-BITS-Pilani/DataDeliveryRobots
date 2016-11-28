@@ -155,11 +155,11 @@ public class ClientView extends Observable {
         if (file.exists()) {
             // A file was chosen previously
             try {
-                Scanner sc = new Scanner(file);
-                autoServerListFile = sc.nextLine();
-                sc.close();
-                result = JOptionPane.showConfirmDialog(null, "Use " + autoServerListFile
-                        + " as the automatic server host names file?");
+                Scanner scanner = new Scanner(file);
+                autoServerListFile = scanner.nextLine();
+                scanner.close();
+                result = JOptionPane.showConfirmDialog(null, "Use '" + autoServerListFile
+                        + "' as the automatic server host names file?");
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
