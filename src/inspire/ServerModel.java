@@ -9,8 +9,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 class ServerModel extends Observable implements Runnable {
-    private static final int controlPort = 9000;
-    private static final int dataPort = 9600;
     static final char FILE_RECEIVE_STARTED = '0';
     static final char FILE_RECEIVE_FINISHED = '1';
     static final char FILES_RECEIVED = '2';
@@ -18,7 +16,8 @@ class ServerModel extends Observable implements Runnable {
     static final char FILE_SEND_FINISHED = '4';
     static final char FILES_SENT = '5';
     static final char CLIENT_CONNECTED = '6';
-
+    private static final int controlPort = 9000;
+    private static final int dataPort = 9600;
     private List<Person> clientList;
     private Map<String, Set<File>> clientFileMap;
     private String downloadsFolder;
@@ -129,7 +128,8 @@ class ServerModel extends Observable implements Runnable {
                         }
                     });
                     miniClientThread.start();
-                } catch (IOException e) {
+                    miniClientThread.join();
+                } catch (IOException | InterruptedException e) {
                     try {
                         Thread.sleep(4000);
                     } catch (InterruptedException e1) {
