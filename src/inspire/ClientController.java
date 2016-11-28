@@ -74,7 +74,7 @@ public class ClientController {
                                     clientModel = new ClientModel(hostName);
                                     clientView.setClientModel(clientModel);
                                     break;
-                                } catch (IOException ignored) {
+                                } catch (IOException e) {
                                 }
                             }
                         }
