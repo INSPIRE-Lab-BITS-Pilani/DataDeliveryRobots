@@ -34,7 +34,7 @@ public class ServerView extends Observable {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JFileChooser fileChooser = new JFileChooser();
-                fileChooser.setCurrentDirectory(new File(System.getProperty("user.home") + "/Downloads"));
+                fileChooser.setCurrentDirectory(new File(System.getProperty("java.io.tmpdir")));
                 fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
                 int result = fileChooser.showOpenDialog(rootPanel);
                 if (result == JFileChooser.APPROVE_OPTION) {
