@@ -1,5 +1,7 @@
 package inspire;
 
+import ru.yandex.qatools.allure.annotations.Attachment;
+
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -45,6 +47,7 @@ public class MiniServer extends Observable implements Runnable {
         this.deleteFiles = deleteFiles;
     }
 
+    @Attachment
     private String getHostName(Socket socket) throws UnknownHostException {
         String hostName = socket.getInetAddress().getHostName();
         if (hostName.equals("localhost")) {

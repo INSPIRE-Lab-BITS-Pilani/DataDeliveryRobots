@@ -19,3 +19,4 @@ docs/
 *.html
 .css/
 .img/
+target/

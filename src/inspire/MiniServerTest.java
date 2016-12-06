@@ -12,6 +12,8 @@ import java.net.Socket;
 import java.util.*;
 
 import static inspire.MiniClient.*;
+import static inspire.MiniClientTest.getBytesFromBAOS;
+import static inspire.MiniClientTest.getBytesFromString;
 import static inspire.MiniServer.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -40,7 +42,7 @@ public class MiniServerTest implements Observer {
             fileList.add(f);
             FileOutputStream fos = new FileOutputStream(f);
             String fileDataStr = fileData[i];
-            byte[] arr = fileDataStr.getBytes();
+            byte[] arr = getBytesFromString(fileDataStr);
             fos.write(arr);
             fos.close();
         }
@@ -81,7 +83,7 @@ public class MiniServerTest implements Observer {
                 Assert.assertEquals(args.get(k), String.valueOf(FILES_SENT) + " "
                         + InetAddress.getLocalHost().getHostName());
                 final Socket socket = mock(Socket.class);
-                final InputStream inputStream = new ByteArrayInputStream(baos.toByteArray());
+                final InputStream inputStream = new ByteArrayInputStream(getBytesFromBAOS(baos));
                 when(socket.getInputStream()).thenReturn(inputStream);
                 String downloadsFolder = System.getProperty("java.io.tmpdir");
                 MiniClient miniClient = new MiniClient(socket, downloadsFolder);

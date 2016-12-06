@@ -1,5 +1,8 @@
 package inspire;
 
+import ru.yandex.qatools.allure.annotations.Attachment;
+import ru.yandex.qatools.allure.annotations.Step;
+
 import java.util.Objects;
 
 /**
@@ -22,6 +25,7 @@ public class Person {
     /**
      * @return human-readable identifier for the client
      */
+    @Attachment
     public String getName() {
         return name;
     }
@@ -29,11 +33,13 @@ public class Person {
     /**
      * @return the client's host name
      */
+    @Attachment
     public String getHostName() {
         return hostName;
     }
 
     @Override
+    @Step("Is hostname of {0} equal to hostname of this object?")
     public boolean equals(Object o) {
         if (this == o) {
             return true;

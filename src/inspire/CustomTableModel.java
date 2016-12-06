@@ -1,5 +1,8 @@
 package inspire;
 
+import ru.yandex.qatools.allure.annotations.Attachment;
+import ru.yandex.qatools.allure.annotations.Step;
+
 import javax.swing.table.AbstractTableModel;
 import java.util.List;
 
@@ -19,11 +22,13 @@ public class CustomTableModel extends AbstractTableModel {
     }
 
     @Override
+    @Attachment
     public String getColumnName(int c) {
         return columns[c];
     }
 
     @Override
+    @Step("Get class of the {0}th column.")
     public Class getColumnClass(int i) {
         return columns[i].getClass();
     }
@@ -32,6 +37,7 @@ public class CustomTableModel extends AbstractTableModel {
      * @return the number of rows in the model
      */
     @Override
+    @Step("Get number of rows.")
     public int getRowCount() {
         return clientList.size();
     }
@@ -40,6 +46,7 @@ public class CustomTableModel extends AbstractTableModel {
      * @return the number of columns in the model
      */
     @Override
+    @Step("Get number of columns.")
     public int getColumnCount() {
         return columns.length;
     }
@@ -50,6 +57,7 @@ public class CustomTableModel extends AbstractTableModel {
      * @return the value Object at the specified cell
      */
     @Override
+    @Step("Get value at ({0}, {1}).")
     public Object getValueAt(int rowIndex, int columnIndex) {
         return clientList.get(rowIndex);
     }

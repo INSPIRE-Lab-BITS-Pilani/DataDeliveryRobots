@@ -4,6 +4,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import ru.yandex.qatools.allure.annotations.Attachment;
 
 import java.io.*;
 import java.net.Socket;
@@ -41,18 +42,28 @@ public class MiniClientTest implements Observer {
             dos.writeInt(fileName.length());
             dos.writeChars(fileName);
             String fileDataStr = fileData[i];
-            byte[] arr = fileDataStr.getBytes();
+            byte[] arr = getBytesFromString(fileDataStr);
             dos.writeLong(arr.length);
             dos.write(arr);
         }
         dos.flush();
-        final InputStream inputStream = new ByteArrayInputStream(baos.toByteArray());
+        final InputStream inputStream = new ByteArrayInputStream(getBytesFromBAOS(baos));
         when(socket.getInputStream()).thenReturn(inputStream);
         downloadsFolder = System.getProperty("java.io.tmpdir");
         miniClient = new MiniClient(socket, downloadsFolder);
         miniClient.addObserver(this);
         miniClientThread = new Thread(miniClient);
         args = new ArrayList<>();
+    }
+
+    @Attachment
+    static byte[] getBytesFromBAOS(ByteArrayOutputStream baos) {
+        return baos.toByteArray();
+    }
+
+    @Attachment
+    static byte[] getBytesFromString(String fileDataStr) {
+        return fileDataStr.getBytes();
     }
 
     @After
