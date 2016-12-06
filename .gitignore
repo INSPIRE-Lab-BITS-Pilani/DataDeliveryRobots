@@ -17,3 +17,5 @@ out/
 src/META-INF/
 docs/
 *.html
+.css/
+.img/
