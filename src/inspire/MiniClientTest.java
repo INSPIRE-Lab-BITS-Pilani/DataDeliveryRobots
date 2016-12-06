@@ -24,7 +24,7 @@ public class MiniClientTest implements Observer {
 
     @Before
     public void setUp() throws Exception {
-        receivers = new String[]{"test1", "test2", "test3"};
+        receivers = new String[]{"Robo1", "Robo2", "Robo3"};
         fileNames = new String[]{"file1.txt", "file2.txt", "file3.txt"};
         fileData = new String[]{"This is file 1", "This is file 2", "This is file 3"};
         final Socket socket = mock(Socket.class);

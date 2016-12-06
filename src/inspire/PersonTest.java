@@ -11,8 +11,8 @@ public class PersonTest {
 
     @Before
     public void setUp() throws Exception {
-        name = "localhost";
-        hostName = "127.0.0.1";
+        name = "test";
+        hostName = "localhost";
         p = new Person(name, hostName);
     }
 

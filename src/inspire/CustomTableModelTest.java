@@ -14,10 +14,10 @@ public class CustomTableModelTest {
     @Before
     public void setUp() throws Exception {
         clientList = new ArrayList<>();
-        clientList.add(new Person("test1", "0.0.0.0"));
-        clientList.add(new Person("test2", "0.0.0.1"));
-        clientList.add(new Person("test3", "0.0.0.2"));
-        clientList.add(new Person("test4", "0.0.0.3"));
+        clientList.add(new Person("test1", "Robo1"));
+        clientList.add(new Person("test2", "Robo2"));
+        clientList.add(new Person("test3", "Robo3"));
+        clientList.add(new Person("test4", "Robo4"));
         ctm = new CustomTableModel(clientList);
     }
 
