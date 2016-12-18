@@ -2,7 +2,6 @@ package inspire;
 
 import ru.yandex.qatools.allure.annotations.Attachment;
 import ru.yandex.qatools.allure.annotations.Step;
-
 import javax.swing.table.AbstractTableModel;
 import java.util.List;
 

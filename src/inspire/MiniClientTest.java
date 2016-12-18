@@ -23,6 +23,16 @@ public class MiniClientTest implements Observer {
     private Thread miniClientThread;
     private List<Object> args;
 
+    @Attachment
+    static byte[] getBytesFromBAOS(ByteArrayOutputStream baos) {
+        return baos.toByteArray();
+    }
+
+    @Attachment
+    static byte[] getBytesFromString(String fileDataStr) {
+        return fileDataStr.getBytes();
+    }
+
     @Before
     public void setUp() throws Exception {
         receivers = new String[]{"Robo1", "Robo2", "Robo3"};
@@ -54,16 +64,6 @@ public class MiniClientTest implements Observer {
         miniClient.addObserver(this);
         miniClientThread = new Thread(miniClient);
         args = new ArrayList<>();
-    }
-
-    @Attachment
-    static byte[] getBytesFromBAOS(ByteArrayOutputStream baos) {
-        return baos.toByteArray();
-    }
-
-    @Attachment
-    static byte[] getBytesFromString(String fileDataStr) {
-        return fileDataStr.getBytes();
     }
 
     @After
