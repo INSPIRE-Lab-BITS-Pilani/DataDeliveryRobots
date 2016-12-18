@@ -7,6 +7,13 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Test for {@link CustomTableModel} class
+ *
+ * @author Abhinav Baid, Atishay Jain
+ * @version 1.0
+ * @since 20-12-2016
+ */
 public class CustomTableModelTest {
     private List<Person> clientList;
     private CustomTableModel ctm;

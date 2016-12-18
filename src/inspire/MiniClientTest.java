@@ -14,6 +14,13 @@ import static inspire.MiniClient.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+/**
+ * Test for {@link MiniClient} class
+ *
+ * @author Abhinav Baid, Atishay Jain
+ * @version 1.0
+ * @since 20-12-2016
+ */
 public class MiniClientTest implements Observer {
     private String[] receivers;
     private String[] fileNames;

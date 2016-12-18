@@ -4,6 +4,13 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+/**
+ * Test for {@link Person} class
+ *
+ * @author Abhinav Baid, Atishay Jain
+ * @version 1.0
+ * @since 20-12-2016
+ */
 public class PersonTest {
     private String name;
     private String hostName;

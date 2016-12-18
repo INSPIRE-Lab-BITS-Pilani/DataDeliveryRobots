@@ -18,6 +18,13 @@ import static inspire.MiniServer.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+/**
+ * Test for {@link MiniServer} class
+ *
+ * @author Abhinav Baid, Atishay Jain
+ * @version 1.0
+ * @since 20-12-2016
+ */
 public class MiniServerTest implements Observer {
     private String[] receivers;
     private String[] fileNames;

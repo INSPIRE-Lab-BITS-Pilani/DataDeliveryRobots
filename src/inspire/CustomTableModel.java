@@ -2,30 +2,55 @@ package inspire;
 
 import ru.yandex.qatools.allure.annotations.Attachment;
 import ru.yandex.qatools.allure.annotations.Step;
+
 import javax.swing.table.AbstractTableModel;
 import java.util.List;
 
 /**
- * This class provides an implementation of the {@code TableModel} interface tailored to view the list of clients
- * {@code clientList}.
+ * This class provides an implementation of the {@code TableModel}
+ * interface tailored to view the list of clients {@code clientList}.
+ *
+ * @author Abhinav Baid, Atishay Jain
+ * @version 1.0
+ * @since 20-12-2016
  */
-public class CustomTableModel extends AbstractTableModel {
-    private String[] columns = {"Name: Host Name"};
-    private List<Person> clientList;
+class CustomTableModel extends AbstractTableModel {
+    /**
+     * Array of column headings of the table
+     */
+    private final String[] columns = {"Name: Host Name"};
+    /**
+     * List of clients
+     */
+    private final List<Person> clientList;
 
     /**
-     * @param clientList the list of clients
+     * Construct the table from a client list
+     *
+     * @param clientList The list of clients
      */
     public CustomTableModel(List<Person> clientList) {
         this.clientList = clientList;
     }
 
+    /**
+     * Returns column name
+     *
+     * @param c Index of column
+     * @return Name of the column
+     */
     @Override
     @Attachment
     public String getColumnName(int c) {
         return columns[c];
     }
 
+    /**
+     * Returns class of column indexed by {@code i}
+     *
+     * @param i Index of column
+     * @return Class of the column
+     */
     @Override
     @Step("Get class of the {0}th column.")
     public Class getColumnClass(int i) {
@@ -33,7 +58,9 @@ public class CustomTableModel extends AbstractTableModel {
     }
 
     /**
-     * @return the number of rows in the model
+     * Returns number of clients
+     *
+     * @return The number of rows in the model
      */
     @Override
     @Step("Get number of rows.")
@@ -42,7 +69,9 @@ public class CustomTableModel extends AbstractTableModel {
     }
 
     /**
-     * @return the number of columns in the model
+     * Returns number of columns
+     *
+     * @return The number of columns in the model
      */
     @Override
     @Step("Get number of columns.")
@@ -51,9 +80,11 @@ public class CustomTableModel extends AbstractTableModel {
     }
 
     /**
-     * @param rowIndex    the row whose value is to be queried
-     * @param columnIndex the column whose value is to be queried
-     * @return the value Object at the specified cell
+     * Returns value at ({@code rowIndex}, {@code columnIndex})
+     *
+     * @param rowIndex    The row whose value is to be queried
+     * @param columnIndex The column whose value is to be queried
+     * @return The value Object at the specified cell
      */
     @Override
     @Step("Get value at ({0}, {1}).")

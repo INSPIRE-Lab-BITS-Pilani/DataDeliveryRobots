@@ -13,33 +13,64 @@ import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Observable;
 
+
 /**
- * The "actual" server class; it is responsible for sending files to the MiniClient instances. It is utilized by both
- * the Server and Client classes.
+ * The actual server class which is responsible for
+ * transferring files to the {@code MiniClient} instances.
+ * It is utilized by both the Server and Client.
+ *
+ * @author Abhinav Baid, Atishay Jain
+ * @version 1.0
+ * @see MiniClient
+ * @since 20-12-2016
  */
-public class MiniServer extends Observable implements Runnable {
+class MiniServer extends Observable implements Runnable {
+    /**
+     * Notify start of file transfer
+     */
     static final char FILE_SEND_STARTED = '0';
+    /**
+     * Notify end of file transfer
+     */
     static final char FILE_SEND_FINISHED = '1';
+    /**
+     * Notify completion of file transfers
+     */
     static final char FILES_SENT = '2';
     /**
-     * The thread created from this {@code MiniServer} instance. It is used in the Server class (once the thread
-     * terminates, the corresponding files can be removed from the {@code clientFileListMap} and deleted if possible).
+     * Socket to transfer files via
      */
-    private Socket socket;
-    private boolean deleteFiles;
-    private List<File> fileList;
-    private List<String> receiverList;
-    private ServerSocket serverSocket;
+    private final Socket socket;
+    /**
+     * Flag to indicate whether to delete files after transfer
+     */
+    private final boolean deleteFiles;
+    /**
+     * List of files to transfer
+     */
+    private final List<File> fileList;
+    /**
+     * List of receivers to transfer with the file list (Only for Client)
+     */
+    private final List<String> receiverList;
+    /**
+     * Server socket ({@code null} in case of Server)
+     */
+    private final ServerSocket serverSocket;
 
     /**
-     * @param socket       the socket to which the files to be sent should be written
-     * @param fileList     list of files selected for sending
-     * @param receiverList list of clients to which {@code fileList} should be sent
-     * @param serverSocket the server socket created for sending (in the Client case, this should be closed after
-     *                     file transfer is complete)
+     * Construct an instance with appropriate parameters
+     *
+     * @param socket       The socket to which the files to be sent should be written
+     * @param fileList     List of files selected for sending
+     * @param receiverList List of clients to which {@code fileList} should be sent
+     * @param serverSocket The server socket created for sending (in the Client case,
+     *                     this should be closed after file transfer is complete)
+     * @param deleteFiles  Flag to know if files are to be deleted after
+     *                     transfer (true in case of Server)
      */
     public MiniServer(Socket socket, List<File> fileList, List<String> receiverList, ServerSocket serverSocket,
-           boolean deleteFiles) {
+                      boolean deleteFiles) {
         this.socket = socket;
         this.fileList = fileList;
         this.receiverList = receiverList;
@@ -47,6 +78,13 @@ public class MiniServer extends Observable implements Runnable {
         this.deleteFiles = deleteFiles;
     }
 
+    /**
+     * Returns the host name of the other side of the socket
+     *
+     * @param socket Socket to get the host name of
+     * @return Host name of the socket's other side
+     * @throws UnknownHostException If socket host name is not found
+     */
     @Attachment
     private String getHostName(Socket socket) throws UnknownHostException {
         String hostName = socket.getInetAddress().getHostName();
@@ -56,6 +94,9 @@ public class MiniServer extends Observable implements Runnable {
         return hostName;
     }
 
+    /**
+     * Spawn a thread to transfer files
+     */
     @Override
     public void run() {
         try {

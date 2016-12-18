@@ -9,28 +9,98 @@ import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class ClientView extends Observable {
+/**
+ * The view for the client in the MVC design.
+ * This class observes a {@code ClientModel} instance
+ * and responds to state changes by updating the
+ * GUI accordingly.
+ *
+ * @author Abhinav Baid, Atishay Jain
+ * @version 1.0
+ * @see ClientModel
+ * @see ClientController
+ * @since 20-12-2016
+ */
+class ClientView extends Observable {
+    /**
+     * Notifies click of start client button
+     */
     static final char START_CLIENT = '0';
+    /**
+     * Notifies click of get list button
+     */
     static final char GET_LIST = '1';
+    /**
+     * Notifies change of downloads folder
+     */
     static final char DOWNLOADS_FOLDER = '2';
+    /**
+     * Notifies a transfer request
+     */
     static final char SEND = '3';
+    /**
+     * Notifies disconnection from the server
+     */
     static final char DISCONNECTED_CLIENT = '4';
+    /**
+     * Format for log history timestamping
+     */
     private static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("h:mm a");
 
+    /**
+     * Start client button
+     */
     private JButton startClientButton;
+    /**
+     * Get list button
+     */
     private JButton getListButton;
+    /**
+     * Client list table for name -> host name
+     */
     private JTable clientListTable;
+    /**
+     * Choose file button
+     */
     private JButton chooseFileButton;
+    /**
+     * Send button for starting transfer
+     */
     private JButton sendButton;
+    /**
+     * Root panel for holding all GUI elements
+     */
     private JPanel rootPanel;
+    /**
+     * Change downloads folder button
+     */
     private JButton downloadsFolderButton;
+    /**
+     * List of files chosen till now
+     */
     private JList fileList;
+    /**
+     * Delete files button
+     */
     private JButton deleteFilesButton;
+    /**
+     * Status of the application
+     */
     private JLabel statusBar;
+    /**
+     * Log of the application activity
+     */
     private JTextArea logHistory;
+    /**
+     * Clear log history
+     */
     private JButton clearLogButton;
 
+    /**
+     * Initialise GUI for the application
+     */
     ClientView() {
+        // Initialise action listeners for buttons
         startClientButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
@@ -109,9 +179,11 @@ public class ClientView extends Observable {
                 logHistory.setText("");
             }
         });
-        clientListTable.setModel(new CustomTableModel(new ArrayList<Person>()));
+        // Initialise client list table, file list and status bar
+        clientListTable.setModel(new CustomTableModel(new ArrayList<>()));
         fileList.setModel(new DefaultListModel());
         statusBar.setText("");
+        // Display the GUI frame
         JFrame frame = new JFrame("Client");
         frame.setContentPane(rootPanel);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -119,10 +191,18 @@ public class ClientView extends Observable {
         frame.setVisible(true);
     }
 
+    /**
+     * Used to get a server host name from the user to connect
+     *
+     * @param serverHostNameFile The name of file where previous host name
+     *                           information may be found
+     * @return A server host name
+     */
     static String getServerHostName(String serverHostNameFile) {
         File file = new File(serverHostNameFile);
         String serverHostName = "";
         int result = JOptionPane.NO_OPTION;
+        // Host name previously chosen
         if (file.exists()) {
             try {
                 Scanner scanner = new Scanner(file);
@@ -133,6 +213,7 @@ public class ClientView extends Observable {
                 e.printStackTrace();
             }
         }
+        // Choose a new server host name
         if (!file.exists() || result != JOptionPane.YES_OPTION) {
             serverHostName = JOptionPane.showInputDialog("Enter the host name of the server");
             if (serverHostName != null) {
@@ -148,12 +229,19 @@ public class ClientView extends Observable {
         return serverHostName;
     }
 
+    /**
+     * Used to get a list of server host names
+     *
+     * @param autoServerListFile File in which previous host name
+     *                           list file information will be found
+     * @return A list of host names to try connecting to
+     */
     static List<String> getAutoServerList(String autoServerListFile) {
         File file = new File(autoServerListFile);
         List<String> autoServerNameList = new ArrayList<>();
         int result = JOptionPane.NO_OPTION;
+        // Auto server file choosen previously
         if (file.exists()) {
-            // A file was chosen previously
             try {
                 Scanner scanner = new Scanner(file);
                 autoServerListFile = scanner.nextLine();
@@ -164,6 +252,7 @@ public class ClientView extends Observable {
                 e.printStackTrace();
             }
         }
+        // Choose a new file
         if (!file.exists() || result != JOptionPane.YES_OPTION) {
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
@@ -207,10 +296,20 @@ public class ClientView extends Observable {
         return autoServerNameList;
     }
 
+    /**
+     * Returns indices of selected receivers
+     *
+     * @return Indices of selected receivers
+     */
     int[] getReceiverIndices() {
         return clientListTable.getSelectedRows();
     }
 
+    /**
+     * Returns selected file list
+     *
+     * @return Selected file list
+     */
     List<File> getSelectedFiles() {
         List<File> selectedFiles = new ArrayList<>();
         ListModel listModel = fileList.getModel();
@@ -221,6 +320,11 @@ public class ClientView extends Observable {
         return selectedFiles;
     }
 
+    /**
+     * Sets the {@code clientModel} parameter of the {@code ClientView} class
+     *
+     * @param clientModel New {@code ClientModel} instance
+     */
     void setClientModel(final ClientModel clientModel) {
         if (clientModel == null) {
             return;
@@ -265,11 +369,21 @@ public class ClientView extends Observable {
         });
     }
 
+    /**
+     * Sets status of the application
+     *
+     * @param status Status of the application
+     */
     private void setStatus(String status) {
         statusBar.setText(status);
         logHistory.append(simpleDateFormat.format(new Date()) + "   " + status + "\n");
     }
 
+    /**
+     * Displays a message
+     *
+     * @param message Message to be displayed
+     */
     void showMessage(String message) {
         JOptionPane.showMessageDialog(rootPanel, message);
     }

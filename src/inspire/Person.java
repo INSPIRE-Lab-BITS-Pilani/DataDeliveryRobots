@@ -6,14 +6,26 @@ import ru.yandex.qatools.allure.annotations.Step;
 import java.util.Objects;
 
 /**
- * This class stores information about a single client - with fields for a human-readable identifier {@code name} and
+ * This class stores information about a single client,
+ * with fields for a human-readable identifier {@code name} and
  * the host name of the client {@code hostName}.
+ *
+ * @author Abhinav Baid, Atishay Jain
+ * @version 1.0
+ * @since 20-12-2016
  */
-public class Person {
-    private String name;
-    private String hostName;
+class Person {
+    /**
+     * Name of the client
+     */
+    private final String name;
+    /**
+     * Host name of the client
+     */
+    private final String hostName;
 
     /**
+     * Initialises a new client (person)
      * @param name     human-readable identifier for the client
      * @param hostName the client's host name
      */
@@ -23,6 +35,8 @@ public class Person {
     }
 
     /**
+     * Get client name
+     *
      * @return human-readable identifier for the client
      */
     @Attachment
@@ -31,6 +45,8 @@ public class Person {
     }
 
     /**
+     * Get client host name
+     *
      * @return the client's host name
      */
     @Attachment
@@ -38,6 +54,12 @@ public class Person {
         return hostName;
     }
 
+    /**
+     * Compares two person objects by their host name
+     *
+     * @param o Object to be compared
+     * @return {@code true} if equal, {@code false} if not
+     */
     @Override
     @Step("Is hostname of {0} equal to hostname of this object?")
     public boolean equals(Object o) {
@@ -51,11 +73,21 @@ public class Person {
         return hostName.equals(person.getHostName());
     }
 
+    /**
+     * Get object hash code
+     *
+     * @return Object hash code
+     */
     @Override
     public int hashCode() {
         return Objects.hash(hostName);
     }
 
+    /**
+     * Get string representation
+     *
+     * @return String representation
+     */
     @Override
     public String toString() {
         return name + ": " + hostName;
