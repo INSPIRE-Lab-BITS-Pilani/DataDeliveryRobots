@@ -15,8 +15,8 @@ hs_err_pid*
 *.iml
 .idea/
 out/
-src/Client.META-INF
-src/Server.META-INF
+src/Client/
+src/Server/
 docs/
 *.html
 .css/
